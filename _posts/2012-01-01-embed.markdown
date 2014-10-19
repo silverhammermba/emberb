@@ -3,13 +3,28 @@ layout: chapter
 title: Running Ruby in C
 ---
 
-Including the Ruby interpreter in your C/C++ program is pretty simple.
-Everything you need gets pulled in through one header and there are simple
-startup and teardown functions to call.
+Including the Ruby interpreter in your C/C++ program is pretty simple.  Just
+include one header and bookend your API calls with simple startup and teardown
+function calls.
 
 {% highlight c %}
 {% include simple.c %}
 {% endhighlight %}
 
-To get this to compile, you may have to modify your compiler's include paths to
-find the header. `ruby.h` also pulls in
+To get this to compile, you may have to add to your compiler's include paths to
+find `ruby.h`. `ruby.h` also includes `ruby/config.h` which is a
+platform-specific header that defines a bunch of preprocessor constants (which
+could require another include path). On my machine, I have to compile with
+
+    -I/usr/include/ruby-2.1.0 -I/usr/include/ruby-2.1.0/x86_64-linux
+
+`ruby_init()` constructs the VM, and you can immediately start using the API
+afterwards. However if the VM fails to start for some reason, it will print an
+error and exit your program! If you would rather have a softer error, you can
+instead call `ruby_setup()` which returns a nonzero value if a failure occurred
+(and then call `ruby_error_print()` to print the error message).
+
+`ruby_cleanup(0)` destructs the VM. If an error occurs during cleanup it returns
+a nonzero value &ndash; otherwise it returns the argument you passed it. This
+allows a little shortcut for returning an error status if the cleanup fails (as
+we did in the previous example).
