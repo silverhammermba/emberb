@@ -1,10 +1,10 @@
 ---
 layout: chapter
-title: Writing Ruby in C
+title: The Ruby C API
 ---
 
 The official Ruby interpreter is written in C. That means that everything you
-can do in Ruby, you can also do using function calls to YARV's C API. Why in the
+can do in Ruby, you can also do using function calls to Ruby's C API. Why in the
 world would you do this? There are two good reasons:
 
 1. You're writing some fancy application in C or C++ and you want some parts of
@@ -15,3 +15,11 @@ world would you do this? There are two good reasons:
    code to leverage the speed and power of C (or an existing C library). You can
    expose C code to Ruby using the API and compile a special library that Ruby
    can `require`.
+
+You'll need to structure your C code differently depending on your goal. If
+you want to embed the Ruby interpreter in C, read [Running Ruby in C][extend]. If
+you want to `require` a compiled C library, read [Running C in Ruby][embed].
+After you finish that, come back here to learn about the API.
+
+[embed]: {{ site.baseurl }}{% post_url 2012-01-01-embed %}
+[extend]: {{ site.baseurl }}{% post_url 2013-01-01-extend %}
