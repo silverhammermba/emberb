@@ -3,4 +3,13 @@ layout: chapter
 title: Running Ruby in C
 ---
 
-TODO
+Including the Ruby interpreter in your C/C++ program is pretty simple.
+Everything you need gets pulled in through one header and there are simple
+startup and teardown functions to call.
+
+{% highlight c %}
+{% include simple.c %}
+{% endhighlight %}
+
+To get this to compile, you may have to modify your compiler's include paths to
+find the header. `ruby.h` also pulls in
