@@ -128,7 +128,7 @@ switch (TYPE(obj)) {
 There is the data-type check function
 
 {% highlight c %}
-void Check_Type(VALUE value, int type)
+void Check_Type(VALUE value, int type);
 {% endhighlight %}
 
 which raises an exception if the VALUE does not have the type
@@ -371,8 +371,8 @@ interpreter.  Ruby provides APIs for defining the following things:
 To define a class or module, use the functions below:
 
 {% highlight c %}
-VALUE rb_define_class(const char *name, VALUE super)
-VALUE rb_define_module(const char *name)
+VALUE rb_define_class(const char *name, VALUE super);
+VALUE rb_define_module(const char *name);
 {% endhighlight %}
 
 These functions return the newly created class or module.  You may
@@ -381,8 +381,8 @@ want to save this reference into a variable to use later.
 To define nested classes or modules, use the functions below:
 
 {% highlight c %}
-VALUE rb_define_class_under(VALUE outer, const char *name, VALUE super)
-VALUE rb_define_module_under(VALUE outer, const char *name)
+VALUE rb_define_class_under(VALUE outer, const char *name, VALUE super);
+VALUE rb_define_module_under(VALUE outer, const char *name);
 {% endhighlight %}
 
 ### Method and Singleton Method Definition
@@ -390,9 +390,9 @@ VALUE rb_define_module_under(VALUE outer, const char *name)
 To define methods or singleton methods, use these functions:
 
 {% highlight c %}
-void rb_define_method(VALUE klass, const char *name, VALUE (*func)(), int argc)
+void rb_define_method(VALUE klass, const char *name, VALUE (*func)(), int argc);
 
-void rb_define_singleton_method(VALUE object, const char *name, VALUE (*func)(), int argc)
+void rb_define_singleton_method(VALUE object, const char *name, VALUE (*func)(), int argc);
 {% endhighlight %}
 
 The `argc` represents the number of the arguments to the C function,
@@ -404,7 +404,7 @@ the arguments.
 If argc is -1, the function will be called as:
 
 {% highlight c %}
-VALUE func(int argc, VALUE *argv, VALUE obj)
+VALUE func(int argc, VALUE *argv, VALUE obj);
 {% endhighlight %}
 
 where argc is the actual number of arguments, argv is the C array of
@@ -414,7 +414,7 @@ If argc is -2, the arguments are passed in a Ruby array. The function
 will be called like:
 
 {% highlight c %}
-VALUE func(VALUE obj, VALUE args)
+VALUE func(VALUE obj, VALUE args);
 {% endhighlight %}
 
 where obj is the receiver, and args is the Ruby array containing
@@ -424,14 +424,14 @@ There are some more functions to define methods. One takes an ID
 as the name of method to be defined. See also ID or Symbol below.
 
 {% highlight c %}
-void rb_define_method_id(VALUE klass, ID name, VALUE (*func)(ANYARGS), int argc)
+void rb_define_method_id(VALUE klass, ID name, VALUE (*func)(ANYARGS), int argc);
 {% endhighlight %}
 
 There are two functions to define private/protected methods:
 
 {% highlight c %}
-void rb_define_private_method(VALUE klass, const char *name, VALUE (*func)(), int argc)
-void rb_define_protected_method(VALUE klass, const char *name, VALUE (*func)(), int argc)
+void rb_define_private_method(VALUE klass, const char *name, VALUE (*func)(), int argc);
+void rb_define_protected_method(VALUE klass, const char *name, VALUE (*func)(), int argc);
 {% endhighlight %}
 
 At last, rb_define_module_function defines a module functions,
@@ -453,14 +453,14 @@ sqrt(4)
 To define module functions, use:
 
 {% highlight c %}
-void rb_define_module_function(VALUE module, const char *name, VALUE (*func)(), int argc)
+void rb_define_module_function(VALUE module, const char *name, VALUE (*func)(), int argc);
 {% endhighlight %}
 
 In addition, function-like methods, which are private methods defined
 in the Kernel module, can be defined using:
 
 {% highlight c %}
-void rb_define_global_function(const char *name, VALUE (*func)(), int argc)
+void rb_define_global_function(const char *name, VALUE (*func)(), int argc);
 {% endhighlight %}
 
 To define an alias for the method,
@@ -472,7 +472,7 @@ void rb_define_alias(VALUE module, const char* new, const char* old);
 To define a reader/writer for an attribute,
 
 {% highlight c %}
-void rb_define_attr(VALUE klass, const char *name, int read, int write)
+void rb_define_attr(VALUE klass, const char *name, int read, int write);
 {% endhighlight %}
 
 To define and undefine the `allocate` class method,
@@ -490,7 +490,7 @@ If you are overriding an existing method of any ancestor of your class,
 you may rely on:
 
 {% highlight c %}
-VALUE rb_call_super(int argc, const VALUE *argv)
+VALUE rb_call_super(int argc, const VALUE *argv);
 {% endhighlight %}
 
 ### Constant Definition
@@ -498,8 +498,8 @@ VALUE rb_call_super(int argc, const VALUE *argv)
 We have 2 functions to define constants:
 
 {% highlight c %}
-void rb_define_const(VALUE klass, const char *name, VALUE val)
-void rb_define_global_const(const char *name, VALUE val)
+void rb_define_const(VALUE klass, const char *name, VALUE val);
+void rb_define_global_const(const char *name, VALUE val);
 {% endhighlight %}
 
 The former is to define a constant under specified class/module.  The
@@ -515,7 +515,7 @@ The easiest way to use Ruby's functionality from a C program is to
 evaluate the string as Ruby program.  This function will do the job:
 
 {% highlight c %}
-VALUE rb_eval_string(const char *str)
+VALUE rb_eval_string(const char *str);
 {% endhighlight %}
 
 Evaluation is done under the current context, thus current local variables
@@ -525,7 +525,7 @@ Note that the evaluation can raise an exception. There is a safer
 function:
 
 {% highlight c %}
-VALUE rb_eval_string_protect(const char *str, int *state)
+VALUE rb_eval_string_protect(const char *str, int *state);
 {% endhighlight %}
 
 It returns nil when an error occur. Moreover, *state is zero if str was
@@ -587,13 +587,13 @@ return a Symbol instead of an ID.
 You can convert C ID to Ruby Symbol by using
 
 {% highlight c %}
-VALUE ID2SYM(ID id)
+VALUE ID2SYM(ID id);
 {% endhighlight %}
 
 and to convert Ruby Symbol object to ID, use
 
 {% highlight c %}
-ID SYM2ID(VALUE symbol)
+ID SYM2ID(VALUE symbol);
 {% endhighlight %}
 
 ### Invoke Ruby Method from C
@@ -601,7 +601,7 @@ ID SYM2ID(VALUE symbol)
 To invoke methods directly, you can use the function below
 
 {% highlight c %}
-VALUE rb_funcall(VALUE recv, ID mid, int argc, ...)
+VALUE rb_funcall(VALUE recv, ID mid, int argc, ...);
 {% endhighlight %}
 
 This function invokes a method on the recv, with the method name
@@ -616,8 +616,8 @@ environments.  There's no way to access Ruby's local variables.
 The functions to access/modify instance variables are below:
 
 {% highlight c %}
-VALUE rb_ivar_get(VALUE obj, ID id)
-VALUE rb_ivar_set(VALUE obj, ID id, VALUE val)
+VALUE rb_ivar_get(VALUE obj, ID id);
+VALUE rb_ivar_set(VALUE obj, ID id, VALUE val);
 {% endhighlight %}
 
 id must be the symbol, which can be retrieved by rb_intern().
@@ -625,7 +625,7 @@ id must be the symbol, which can be retrieved by rb_intern().
 To access the constants of the class/module:
 
 {% highlight c %}
-VALUE rb_const_get(VALUE obj, ID id)
+VALUE rb_const_get(VALUE obj, ID id);
 {% endhighlight %}
 
 See also Constant Definition above.
@@ -652,7 +652,7 @@ Information can be shared between the two environments using shared global
 variables.  To define them, you can use functions listed below:
 
 {% highlight c %}
-void rb_define_variable(const char *name, VALUE *var)
+void rb_define_variable(const char *name, VALUE *var);
 {% endhighlight %}
 
 This function defines the variable which is shared by both environments.
@@ -663,14 +663,14 @@ You can define read-only (from Ruby, of course) variables using the
 function below.
 
 {% highlight c %}
-void rb_define_readonly_variable(const char *name, VALUE *var)
+void rb_define_readonly_variable(const char *name, VALUE *var);
 {% endhighlight %}
 
 You can defined hooked variables.  The accessor functions (getter and
 setter) are called on access to the hooked variables.
 
 {% highlight c %}
-void rb_define_hooked_variable(const char *name, VALUE *var, VALUE (*getter)(), void (*setter)())
+void rb_define_hooked_variable(const char *name, VALUE *var, VALUE (*getter)(), void (*setter)());
 {% endhighlight %}
 
 If you need to supply either setter or getter, just supply 0 for the
@@ -688,7 +688,7 @@ Also you can define a Ruby global variable without a corresponding C
 variable.  The value of the variable will be set/get only by hooks.
 
 {% highlight c %}
-void rb_define_virtual_variable(const char *name, VALUE (*getter)(), void (*setter)())
+void rb_define_virtual_variable(const char *name, VALUE (*getter)(), void (*setter)());
 {% endhighlight %}
 
 The prototypes of the getter and setter functions are as follows:
@@ -880,7 +880,7 @@ which contains the arguments to the method.
 but are not exported to the Ruby world.  You need to protect them by
 
 {% highlight c %}
-void rb_global_variable(VALUE *var)
+void rb_global_variable(VALUE *var);
 {% endhighlight %}
 
 ## Prepare extconf.rb
@@ -1589,7 +1589,7 @@ void ruby_script(char *name)
 ## Hooks for the Interpreter Events
 
 {% highlight c %}
-void rb_add_event_hook(rb_event_hook_func_t func, rb_event_flag_t events, VALUE data)
+void rb_add_event_hook(rb_event_hook_func_t func, rb_event_flag_t events, VALUE data);
 {% endhighlight %}
 
 Adds a hook function for the specified interpreter events.
@@ -1608,7 +1608,7 @@ events should be OR'ed value of:
 The definition of rb_event_hook_func_t is below:
 
 {% highlight c %}
-typedef void (*rb_event_hook_func_t)(rb_event_t event, VALUE data, VALUE self, ID id, VALUE klass)
+typedef void (*rb_event_hook_func_t)(rb_event_t event, VALUE data, VALUE self, ID id, VALUE klass);
 {% endhighlight %}
 
 The third argument `data` to rb_add_event_hook() is passed to the hook
@@ -1616,7 +1616,7 @@ function as the second argument, which was the pointer to the current
 NODE in 1.8.  See RB_EVENT_HOOKS_HAVE_CALLBACK_DATA below.
 
 {% highlight c %}
-int rb_remove_event_hook(rb_event_hook_func_t func)
+int rb_remove_event_hook(rb_event_hook_func_t func);
 {% endhighlight %}
 
 Removes the specified hook function.
