@@ -3,28 +3,49 @@ layout: chapter
 title: Running Ruby in C
 ---
 
-Including the Ruby interpreter in your C/C++ program is pretty simple.  Just
-include one header and bookend your API calls with simple startup and teardown
-function calls.
+## Compiling ##
+
+Embedding Ruby requires one header `ruby.h`, which includes a platform-specific
+header `ruby/config.h`. You will probably need to tell your compiler about the
+include paths for these headers. You will also need to link with the Ruby lib.
+On my machine, my minimal compiler options are
+
+    -I/usr/include/ruby-2.1.0 -I/usr/include/ruby-2.1.0/x86_64-linux -lruby
+
+Though, if available, you should really use `pkg-config` to get the appropriate
+options for your distribution:
+
+    $ pkg-config --cflags --libs ruby-2.1
+
+## Startup, Teardown ##
+
+Including the Ruby interpreter in your C/C++ program is pretty simple. Just
+include the header and bookend your API calls with some function calls.
 
 {% highlight c %}
 {% include simple.c %}
 {% endhighlight %}
 
-To get this to compile, you may have to add to your compiler's include paths to
-find `ruby.h`. `ruby.h` also includes `ruby/config.h` which is a
-platform-specific header that defines a bunch of preprocessor constants (which
-could require another include path). On my machine, I have to compile with
-
-    -I/usr/include/ruby-2.1.0 -I/usr/include/ruby-2.1.0/x86_64-linux
-
-`ruby_init()` constructs the VM, and you can immediately start using the API
-afterwards. However if the VM fails to start for some reason, it will print an
-error and exit your program! If you would rather have a softer error, you can
-instead call `ruby_setup()` which returns a nonzero value if a failure occurred
-(and then call `ruby_error_print()` to print the error message).
+`ruby_init()` constructs the VM. However, if the VM fails to start it will
+print an error and exit your program! If you would rather have a softer error,
+you can instead call `ruby_setup()` which returns a nonzero value if a failure
+occurred (and then call `ruby_error_print()` to print the error message).
 
 `ruby_cleanup(0)` destructs the VM. If an error occurs during cleanup it returns
 a nonzero value &ndash; otherwise it returns the argument you passed it. This
 allows a little shortcut for returning an error status if the cleanup fails (as
 we did in the previous example).
+
+During cleanup, the VM might evaluate more Ruby code (if you passed a block to
+`at_exit`, for example) which could raise an exception. `ruby_cleanup`
+suppresses such exceptions, but if you instead call `ruby_finalize()` they will
+be raised normally (see the section on [Exceptions][exc] for how to handle
+them).
+
+[exc]: TODO
+
+{% highlight c %}
+{% include advanced.c %}
+{% endhighlight %}
+
+## Options ##
