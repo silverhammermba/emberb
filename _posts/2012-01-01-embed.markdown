@@ -29,12 +29,12 @@ include the header and bookend your API calls with some function calls.
 `ruby_init()` constructs the VM. However, if the VM fails to start it will
 print an error and exit your program! If you would rather have a softer error,
 you can instead call `ruby_setup()` which returns a nonzero value if a failure
-occurred (and then call `ruby_error_print()` to print the error message).
+occurred (unfortunately there is no way to get a message for the error).
 
 `ruby_cleanup(0)` destructs the VM. If an error occurs during cleanup it returns
 a nonzero value &ndash; otherwise it returns the argument you passed it. This
 allows a little shortcut for returning an error status if the cleanup fails (as
-we did in the previous example).
+demonstrated in the previous example).
 
 During cleanup, the VM might evaluate more Ruby code (if you passed a block to
 `at_exit`, for example) which could raise an exception. `ruby_cleanup`
