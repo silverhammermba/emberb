@@ -1,0 +1,8 @@
+name: The Definitive Guide to Embedding Ruby
+highlighter: pygments
+baseurl: /emberb
+markdown: kramdown
+permalink: /:categories/:title/
+gems: ['jekyll-less']
+kramdown:
+  parse_block_html: true
