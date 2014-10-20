@@ -23,3 +23,30 @@ After you finish that, come back here to learn about the API.
 
 [embed]: {{ site.baseurl }}{% post_url 2012-01-01-embed %}
 [extend]: {{ site.baseurl }}{% post_url 2013-01-01-extend %}
+
+## Quick 'n' Dirty ##
+
+The simplest way to run some Ruby code from C is to `eval` it
+
+{% highlight c %}
+{% include eval.snip %}
+{% endhighlight %}
+
+This is a good fallback if you can't find an API function for something that you
+want to do. `rb_eval_string_protect` returns the result of the Ruby code
+(remember that all Ruby code returns something) and sets `state` to some nonzero
+value if any exception is raised. `VALUE` is the C data type for all Ruby
+objects, as explained in the next section.
+
+If `state` is nonzero, you should be able to get information about the error by
+accessing the variable `$!` (as you would in Ruby). If you are embedding
+the Ruby VM, `state` can be passed to `ruby_cleanup` for automatic error message
+output.  Alternatively, you can use `rb_eval_string("...")` which raises any
+exceptions normally (see [Exceptions][exc]).
+
+[exc]: #TODO
+
+However, just like `eval` in Ruby, this approach should be avoided when possible
+as it somewhat defeats the point of writing in C. Using the API, it is possible
+to directly manipulate Ruby's data structures, which is much more efficient than
+passing strings to the interpreter.

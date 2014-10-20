@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
 	{
 		/* Ruby goes here */
 
-		ruby_finalize(); // XXX you should probably guard against exceptions here!!!
+		ruby_finalize(); // XXX rescue exceptions here!!!
 	}
 
 	return 0;

@@ -37,12 +37,12 @@ allows a little shortcut for returning an error status if the cleanup fails (as
 demonstrated in the previous example).
 
 During cleanup, the VM might evaluate more Ruby code (if you passed a block to
-`at_exit`, for example) which could raise an exception. `ruby_cleanup`
-suppresses such exceptions, but if you instead call `ruby_finalize()` they will
-be raised normally (see the section on [Exceptions][exc] for how to handle
-them).
+`at_exit`, for example) which could raise an exception. `ruby_cleanup` handles
+these by just returning a nonzero value, but if you instead call
+`ruby_finalize()` they will be raised normally (see the section on
+[Exceptions][exc] for how to handle them).
 
-[exc]: TODO
+[exc]: #TODO
 
 Here's an alternative example:
 
@@ -57,13 +57,13 @@ more stuff before you start running Ruby code. To set the name of the Ruby
 script (e.g. `$0`) for error messages and such, use
 
 {% highlight c %}
-void ruby_script(const char *name);
+ruby_script("new name")
 {% endhighlight %}
 
 To set up the load path so that gems can be loaded with `require`, use
 
 {% highlight c %}
-void ruby_init_loadpath(void);
+ruby_init_loadpath()
 {% endhighlight %}
 
 You can also pass options to the VM just like you would to `ruby` on the command
@@ -83,9 +83,18 @@ options but _not_ run any Ruby code, you can pass it an empty line: `"-e "`.
 `ruby_options` returns a "node" that represents the compiled Ruby code. In some
 cases (such as a syntax error) the node will be invalid and you shouldn't run
 it. `ruby_executable_node` checks for this. If the node is valid, you can run it
-with `ruby_exec_node`. The status returned by `ruby_executable_node` (through
+with `ruby_exec_node`. The state returned by `ruby_executable_node` (through
 the pointer) and by `ruby_exec_node` can be passed to `ruby_cleanup` to print an
 appropriate error message[^hand].
+
+Ruby currently doesn't support any other way of compiling and running code
+separately.
+
+## Success ##
+
+Now you're ready to interact with Ruby! Go back to the [C API][c].
+
+[c]: {{ site.baseurl }}{% post_url 2010-01-01-c %}
 
 ## Footnotes ##
 
@@ -93,8 +102,9 @@ appropriate error message[^hand].
         function isn't exposed to the API.
 
 [^opt]: In my tests I couldn't get flags like `-w` and `-v` to do anything. This
-        could be related to `ruby_prog_init()`.
+        could be related to `ruby_prog_init()`. And really it should be possible
+		to do this without parsing command line options.
 
-[^hand]: `ruby_cleanup` does this by calling `error_handle(status)`, but again
+[^hand]: `ruby_cleanup` does this by calling `error_handle(state)`, but again
          this is not exposed to the API. It is not clear if this is possible to
 		 do without cleaning up the VM.
