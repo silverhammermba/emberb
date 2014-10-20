@@ -30,7 +30,7 @@ Your `extconf.h` might contain
 
 `create_makefile` obviously creates the Makefile, but its argument is especially
 important as it defines the entry point of your C code and the name of the
-resulting binary. This is the name of your extension.
+resulting library. The argument essentially defines the name of your extension.
 
 All of the `mkmf` preparation functions and their options are well-documented
 [online][mkmf]. I don't think I could do a better job here.

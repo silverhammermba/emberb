@@ -17,12 +17,9 @@ world would you do this? There are two good reasons:
    can `require`.
 
 You'll need to structure your C code differently depending on your goal. If
-you want to embed the Ruby interpreter in C, read [Running Ruby in C][embed]. If
-you want to `require` a compiled C library, read [Running C in Ruby][extend].
+you want to embed the Ruby interpreter in C, read [Running Ruby in C](../embed). If
+you want to `require` a compiled C library, read [Running C in Ruby](../extend).
 After you finish that, come back here to learn about the API.
-
-[embed]: {{ site.baseurl }}{% post_url 2012-01-01-embed %}
-[extend]: {{ site.baseurl }}{% post_url 2013-01-01-extend %}
 
 ## Quick 'n' Dirty ##
 
