@@ -22,7 +22,7 @@ options for your distribution:
 Including the Ruby interpreter in your C/C++ program is pretty simple. Just
 include the header and bookend your API calls with some function calls.
 
-{% highlight c %}
+{% highlight c linenos %}
 {% include simple.c %}
 {% endhighlight %}
 
@@ -46,17 +46,31 @@ them).
 
 Here's an alternative example:
 
-{% highlight c %}
+{% highlight c linenos %}
 {% include advanced.c %}
 {% endhighlight %}
 
-## Options ##
+## Tweaking the VM ##
 
-If you want, you can pass options to the VM just like you would to `ruby` on the
-command line. This is handy for stuff like setting the warning level or verbose
-mode[^opt].
+You now have a bare-bones Ruby VM running, but you may want to set up a little
+more stuff before you start running Ruby code. To set the name of the Ruby
+script (e.g. `$0`) for error messages and such, use
 
 {% highlight c %}
+void ruby_script(const char *name);
+{% endhighlight %}
+
+To set up the load path so that gems can be loaded with `require`, use
+
+{% highlight c %}
+void ruby_init_loadpath(void);
+{% endhighlight %}
+
+You can also pass options to the VM just like you would to `ruby` on the command
+line. This is handy for stuff like setting the warning level or verbose
+mode[^opt].
+
+{% highlight c linenos %}
 {% include options.c %}
 {% endhighlight %}
 
@@ -78,7 +92,8 @@ appropriate error message[^hand].
 [^err]: `ruby_init` uses `error_print()` to get an error message, but this
         function isn't exposed to the API.
 
-[^opt]: In my tests I couldn't get flags like `-w` and `-v` to do anything.
+[^opt]: In my tests I couldn't get flags like `-w` and `-v` to do anything. This
+        could be related to `ruby_prog_init()`.
 
 [^hand]: `ruby_cleanup` does this by calling `error_handle(status)`, but again
          this is not exposed to the API. It is not clear if this is possible to
