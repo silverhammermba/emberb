@@ -1,4 +1,4 @@
-name: The Definitive Guide to Embedding Ruby
+name: The Definitive Guide to Ruby's C API
 highlighter: pygments
 baseurl: /emberb
 markdown: kramdown

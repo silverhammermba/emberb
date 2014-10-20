@@ -18,7 +18,7 @@ other ones.
   running as quickly as possible
 
 And it struck me that all of these problems come from these guides largely being
-on media that do not condone community-driven updates. So I'm writing a new
+on media that do not promote community-driven updates. So I'm writing a new
 guide that doesn't suck and is on Github so you too can help make it not suck.
 
 [a]: http://clalance.blogspot.com/2011/01/writing-ruby-extensions-in-c-part-1.html
