@@ -23,8 +23,9 @@ The preparation section should perform actions similar to the standard UNIX
 
 [conf]: http://en.wikipedia.org/wiki/Configure_script
 
-For example, an extension which uses SDL2 and needs to know how big `int`s are
-might call:
+The most common of these actions are provided by the `mkmf` lib we required (but
+you have all of Ruby at your disposal if you need it). For example, an extension
+which uses SDL2 and needs to know how big `int`s are might call:
 
 {% highlight ruby %}
 {% include ext/exex.rb %}
