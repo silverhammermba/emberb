@@ -3,4 +3,29 @@ layout: chapter
 title: Running C in Ruby
 ---
 
-TODO
+## Compiling ##
+
+Compiling C code to be loaded by Ruby requires some fancy compiler options.
+Luckily, Ruby provides a means of easily generating a Makefile containing the
+required options called "MakeMakefile". To use it, create the file `extconf.rb`
+in the same directory as your C code:
+
+{% highlight ruby %}
+{% include ext/extconf.rb %}
+{% endhighlight %}
+
+`create_header` creates the file `extconf.h` which you can include in all of
+your C files. The contents  of `extconf.h` depend on the preparation functions
+you called before it was generated. For example, if you call
+`check_sizeof('int')`, `extconf.h` might contain `#define SIZEOF_INT 4`. If you
+call `have_func('SDL_Init', 'SDL2/SDL.h')`, it might contain `#define
+HAVE_SDL_INIT 1` and so on.
+
+`create_makefile` obviously creates the Makefile, but its argument is especially
+important as it defines the entry point of your C code and the name of the
+resulting binary. This is the name of your extension.
+
+All of the `mkmf` preparation functions and their options are well-documented
+[online][mkmf]. I don't think I could do a better job here.
+
+[mkmf]: http://www.ruby-doc.org/stdlib/libdoc/mkmf/rdoc/MakeMakefile.html
