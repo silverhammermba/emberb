@@ -67,13 +67,19 @@ code to run with `-e`, it will try to read from `stdin`. If you want to set
 options but _not_ run any Ruby code, you can pass it an empty line: `"-e "`.
 
 `ruby_options` returns a "node" that represents the compiled Ruby code. In some
-cases (such as a syntax error) the node will be invalid and you shouldn't try to
-run it. `ruby_executable_node` checks for this. If the node is valid, you can
-run it with `ruby_exec_node`
+cases (such as a syntax error) the node will be invalid and you shouldn't run
+it. `ruby_executable_node` checks for this. If the node is valid, you can run it
+with `ruby_exec_node`. The status returned by `ruby_executable_node` (through
+the pointer) and by `ruby_exec_node` can be passed to `ruby_cleanup` to print an
+appropriate error message[^hand].
 
 ## Footnotes ##
 
 [^err]: `ruby_init` uses `error_print()` to get an error message, but this
-        function isn't exposed to the API
+        function isn't exposed to the API.
 
-[^opt]: but in my tests I couldn't get flags like `-w` and `-v` to do anything
+[^opt]: In my tests I couldn't get flags like `-w` and `-v` to do anything.
+
+[^hand]: `ruby_cleanup` does this by calling `error_handle(status)`, but again
+         this is not exposed to the API. It is not clear if this is possible to
+		 do without cleaning up the VM.

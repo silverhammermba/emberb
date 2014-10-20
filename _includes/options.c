@@ -10,12 +10,12 @@ int main(int argc, char* argv[])
 	int status;
 	if (ruby_executable_node(node, &status))
 	{
-		ruby_exec_node(node);
+		status = ruby_exec_node(node);
 	}
 	else
 	{
-		// code didn't compile, maybe return status
+		// code didn't compile
 	}
 
-	return ruby_cleanup(0);
+	return ruby_cleanup(status);
 }
