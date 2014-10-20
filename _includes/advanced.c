@@ -1,6 +1,6 @@
 #include <ruby.h>
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
 	if (ruby_setup())
 	{
@@ -8,7 +8,6 @@ int main(int argc, char** argv)
 	}
 	else
 	{
-
 		/* Ruby goes here */
 
 		ruby_finalize(); // XXX you should probably guard against exceptions here!!!

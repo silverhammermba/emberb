@@ -29,7 +29,7 @@ include the header and bookend your API calls with some function calls.
 `ruby_init()` constructs the VM. However, if the VM fails to start it will
 print an error and exit your program! If you would rather have a softer error,
 you can instead call `ruby_setup()` which returns a nonzero value if a failure
-occurred (unfortunately there is no way to get a message for the error).
+occurred (unfortunately there is no way to get a message for the error[^err]).
 
 `ruby_cleanup(0)` destructs the VM. If an error occurs during cleanup it returns
 a nonzero value &ndash; otherwise it returns the argument you passed it. This
@@ -44,8 +44,36 @@ them).
 
 [exc]: TODO
 
+Here's an alternative example:
+
 {% highlight c %}
 {% include advanced.c %}
 {% endhighlight %}
 
 ## Options ##
+
+If you want, you can pass options to the VM just like you would to `ruby` on the
+command line. This is handy for stuff like setting the warning level or verbose
+mode[^opt].
+
+{% highlight c %}
+{% include options.c %}
+{% endhighlight %}
+
+The arguments to `ruby_options` are `argc` and `argv` just like a main function.
+And just like the main of the `ruby` program, the VM expects to get some Ruby
+code when you call it. If you don't give it the filename of a script to load or
+code to run with `-e`, it will try to read from `stdin`. If you want to set
+options but _not_ run any Ruby code, you can pass it an empty line: `"-e "`.
+
+`ruby_options` returns a "node" that represents the compiled Ruby code. In some
+cases (such as a syntax error) the node will be invalid and you shouldn't try to
+run it. `ruby_executable_node` checks for this. If the node is valid, you can
+run it with `ruby_exec_node`
+
+## Footnotes ##
+
+[^err]: `ruby_init` uses `error_print()` to get an error message, but this
+        function isn't exposed to the API
+
+[^opt]: but in my tests I couldn't get flags like `-w` and `-v` to do anything
