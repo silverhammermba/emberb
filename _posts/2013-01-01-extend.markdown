@@ -80,15 +80,36 @@ But of course that won't do anything without some C code to compile.
 Your C code can be structured however you want. The only requirement is that you
 must include a function for the Ruby VM to call when your library is `require`d.
 The name of the function is determined by the argument you passed to
-`create_makefile` in `extconf.rb`. We used "foobar" in our example, so our C
-code would be
+`create_makefile` in `extconf.rb`. We used "foobar" in our example, so we'll
+create `foobar.c` containing
 
 {% highlight c linenos %}
 {% include ext/foobar.c %}
 {% endhighlight %}
 
+### Filenames ###
+
+Your C file doesn't have to be named after your extension, that's just the idiom
+if your extension is simple enough to be contained in a single C file. If your
+extension consists of multiple C files, the official documentation recommends
+_not_ naming any of them after your extension[^3].
+
+Also avoid naming any files `conftest.c` as this file may be written to by
+`mkmf`.
+
+## Success ##
+
+Now make should compile a file like `foobar.so`. Start up `irb` and `require
+'./foobar'` to give your extension a try! Now you're ready to learn about the [C
+API](../c).
+
 ## Footnotes ##
 
 [^1]: I can only find these globals documented in README.EXT.
-[^2]: README.EXT hints that `mkmf` parses certain command line flags e.g.
-      `--vendor`. But I also can't find this documented anywhere.
+
+[^2]: README.EXT [hints](../readme#generate-makefile) that `mkmf` parses certain
+	  command line flags e.g.  `--vendor`. But I also can't find this documented
+	  anywhere.
+
+[^3]: See [README.EXT](../readme#write-the-c-code). Though I really don't
+      understand why it recommends this.

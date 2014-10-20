@@ -92,9 +92,7 @@ separately.
 
 ## Success ##
 
-Now you're ready to interact with Ruby! Go back to the [C API][c].
-
-[c]: {{ site.baseurl }}{% post_url 2010-01-01-c %}
+Now you're ready to interact with Ruby! Go back to the [C API](../c).
 
 ## Footnotes ##
 
