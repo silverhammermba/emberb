@@ -89,19 +89,37 @@ create `foobar.c` containing
 
 ### Filenames ###
 
-Your C file doesn't have to be named after your extension, that's just the idiom
-if your extension is simple enough to be contained in a single C file. If your
-extension consists of multiple C files, the official documentation recommends
-_not_ naming any of them after your extension[^3].
+If your extension has only a single C file, you should name it after your
+extension as we did above. If your extensions has multiple C files _do not_ name
+any of them after your extension. This is because the Makefile may generate a
+`.o` file named after your extension for the linking stage, which would cause a
+conflict if you also have a `.c` file which compiles to that filename.
 
 Also avoid naming any files `conftest.c` as this file may be written to by
 `mkmf`.
 
 ## Success ##
 
-Now make should compile a file like `foobar.so`. Start up `irb` and `require
-'./foobar'` to give your extension a try! Now you're ready to learn about the [C
-API](../c).
+Now make should compile a `.so` (or some other library) file which you can
+`require` in Ruby. You can fill in your `Init` function with plain C code, but
+you'll probably want to go back and learn about the [C API](../c) to do more
+interesting stuff.
+
+## Gem ##
+
+After you've got your extension working nicely, you may want to bundle up it as
+an easily distributable Ruby gem. rubygems.org has a [detailed guide][rbg] on
+creating gems, but as far as C extensions go you just need to tell the spec
+about `extconf.rb`[^4]:
+
+{% highlight ruby %}
+{% include foobar.gemspec %}
+{% endhighlight %}
+
+If your gem includes multiple independent extensions, you can organize them in
+subdirectories of `ext/` and pass all of the `extconf.rb`s to the spec.
+
+[rbg]: http://guides.rubygems.org/make-your-own-gem/
 
 ## Footnotes ##
 
@@ -113,3 +131,5 @@ API](../c).
 
 [^3]: See [README.EXT](../readme#write-the-c-code). Though I really don't
       understand why it recommends this.
+
+[^4]: http://guides.rubygems.org/gems-with-extensions/
