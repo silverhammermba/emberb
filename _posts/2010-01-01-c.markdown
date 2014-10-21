@@ -41,9 +41,48 @@ the Ruby VM, `state` can be passed to `ruby_cleanup` for automatic error message
 output.  Alternatively, you can use `rb_eval_string("...")` which raises any
 exceptions normally (see [Exceptions][exc]).
 
-[exc]: #TODO
+However, just like `eval` in Ruby, this approach is inefficient and somewhat
+defeats the point of writing in C. Avoid using it whenever possible. Using the
+API, it is possible to directly manipulate Ruby's data structures, which is much
+more efficient than passing strings to the interpreter.
 
-However, just like `eval` in Ruby, this approach should be avoided when possible
-as it somewhat defeats the point of writing in C. Using the API, it is possible
-to directly manipulate Ruby's data structures, which is much more efficient than
-passing strings to the interpreter.
+## VALUE ##
+
+Before we go any further, we need to understand `VALUE`s. Due to the danger of
+monkeying around inside the VM, the API never lets you directly access Ruby's
+objects. Instead, your C code will store and pass around _pointers_ to Ruby
+objects. These pointers can be passed to various API functions and macros that
+will safely access and manipulate the Ruby objects. `VALUE` is the API-defined C
+type for these pointers.
+
+Probably the most frequent question you'll have is "what is the class of this
+`VALUE`'s object?". The easiest way to answer this with the API is to use the
+`TYPE` macro.
+
+{% highlight c %}
+{% include type.snip %}
+{% endhighlight %}
+
+The various [`T_` constants](../readme#data-types) are defined by the API for all of
+Ruby's core classes and `TYPE()` simply returns the appropriate constant for
+the `VALUE`. Note that `TYPE()` works kind of like [`is_a?`][isa]: if you
+subclass `Array` it will return `T_ARRAY` for those instances. Since everything
+in Ruby `is_a?  Object`, `T_OBJECT` acts as a catch-all and will be returned for
+any class that doesn't fit any of the other constants. That's why the `default:`
+for the above switch should not normally be reached. Considering raising an
+[exception][exc] in that case.
+
+[isa]: http://ruby-doc.org/core-2.1.3/Object.html#method-i-is_a-3F
+
+Of course you can also [call][meth] the Ruby method `.class` to get the `VALUE` pointing
+to the class object. If you have a specific class in mind, there are faster
+checks than that big switch statement:
+
+{% highlight c %}
+{% include checktype.snip %}
+{% endhighlight %}
+
+[exc]: #TODO
+[meth]: #TODO
+
+## Footnotes ##
