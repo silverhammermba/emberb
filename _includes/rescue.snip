@@ -1,0 +1,35 @@
+VALUE dangerous_func(VALUE obj)
+{
+	/* code that could raise an exception */
+	return obj;
+}
+
+VALUE rescue_func(VALUE obj)
+{
+	VALUE exception = rb_errinfo();
+	rb_set_errinfo(Qnil);
+
+	/* do something with exception */
+	return obj;
+}
+
+void some_function()
+{
+	/* ... */
+
+	// call dangerous_func and handle exceptions here
+	int state;
+	VALUE result = rb_protect(dangerous_func, Qnil, &state);
+	if (state)
+	{
+		VALUE exception = rb_errinfo();
+		rb_set_errinfo(Qnil);
+
+		/* do something with exception */
+	}
+
+	// call dangerous_func and handle exceptions in rescue_func
+	rb_rescue(dangerous_func, Qnil, rescue_func, Qnil);
+
+	/* ... */
+}

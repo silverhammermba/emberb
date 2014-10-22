@@ -1,0 +1,1 @@
+result = obj.send(:==, nil)
