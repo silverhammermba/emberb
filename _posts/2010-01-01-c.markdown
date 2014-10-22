@@ -114,6 +114,12 @@ to the class object. We'll see how to do that later.
 A few Ruby classes are analogous to C types. These classes will be your primary
 means of transferring data between C and Ruby.
 
+### Constants ###
+
+Ruby's constants each get a corresponding constant `VALUE` in the API: `Qnil`
+for `nil`, `Qfalse` for `false`, and `Qtrue` for `true`. As a convenience,
+`Qfalse` is also false in C (i.e. `0`).
+
 ### Fixnum ###
 
 Ruby's `Fixnum` corresponds to C's `long`. The `FIX2LONG()` macro gives you the
