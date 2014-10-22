@@ -59,7 +59,7 @@ objects, as explained in the next section.
 If `state` is nonzero, you should be able to get information about the error by
 accessing the variable `$!` (as you would in Ruby). If you are embedding
 the Ruby VM, `state` can be passed to `ruby_cleanup` for automatic error message
-output.  Alternatively, you can use `rb_eval_string("...")` which raises any
+output.  Alternatively, you can use `rb_eval_string()` which raises any
 exceptions normally (see [Exceptions][exc]).
 
 However, just like `eval` in Ruby, this approach is inefficient and somewhat
@@ -180,8 +180,66 @@ Ruby's `String` kinda corresponds to C's `char*`. The simplest macro is
 problem here is that a Ruby `String` _might contain nulls_ - in which case
 `StringValueCStr()` will raise an `ArgumentError`! Instead you can use the
 macros `StringValuePtr()` and `RSTRING_LEN()` to get a (possibly unterminated)
-`char*` and the string's length as a `long`.
+`char*` and the string's length as a `long`[^2].
+
+Conversely, if you have a null-terminated `char*`, you can use
+`rb_str_new_cstr()` to create a Ruby `String`. `rb_str_new()` constructs a
+`String` from a `char*` and the string's length (as a `long`)[^3].
+
+## Methods ##
+
+Now that you can make all of these Ruby objects, you'll probably want to start
+sending them methods. The easiest way to do this looks like this:
+
+{% highlight c %}
+{% include funcall.snip %}
+{% endhighlight %}
+
+This is roughly equivalent to the Ruby code
+
+{% highlight ruby %}
+{% include funcall.rb %}
+{% endhighlight %}
+
+The first argument is the receiver. The next uses `rb_intern` to return an `ID`
+for the method name. `ID` is the C data type corresponding to `Symbol` in Ruby.
+The same way that Ruby passes around symbols for method names, the C API passes
+around `ID`s. The third argument is the number of method arguments, which is
+needed since `rb_funcall` is a varargs function. Then come the actual method
+arguments.
+
+Alternatively, you can use `rb_funcallv()` where the fourth argument is a
+`VALUE*` pointing to a C array of arguments. This also has the variant
+`rb_funcallv_public()` which is like `public_send` in Ruby.
+
+Whenever possible, this approach should be used instead of the
+[quick'n'dirty](#quick-n-dirty) `rb_eval_string()`. It's faster
+since it skips the parser and it allows for some compile-time checking.
+
+## Exceptions ##
+
+If you've been playing around with the API, you've almost certainly run
+into exceptions by now, so I should probably talk about them. First to raise an
+exception, use:
+
+{% highlight c %}
+{% include raise.snip %}
+{% endhighlight %}
+
+The first and second arguments are the exception class and message, just like
+`raise` in Ruby (all exception classes start with `rb_e`). The big difference is
+that the message is a format string just like in `printf`[^4], letting you more
+easily include relevant information.
 
 ## Footnotes ##
 
 [^1]: I haven't checked.
+
+[^2]: I'm not sure how to deal with different encodings (especially wide ones).
+
+[^3]: Again, the documention mentions that there are ways to create UTF-8
+      strings (`rb_utf8_str_new`), but I couldn't get them to work.
+
+[^4]: The documentation [claims](../readme#exceptions-and-errors) to support the
+	  additional format directives `%i` and `%+i` for `to_s` and `inspect` (both
+	  take a `VALUE`) but these printed garbage in my tests.
