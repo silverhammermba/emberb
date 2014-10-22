@@ -173,6 +173,15 @@ there's no reasonable conversion.
 Note that these macros will generally be a little slower than the ones from the
 previous sections as they need to do more checks.
 
+### String ###
+
+Ruby's `String` kinda corresponds to C's `char*`. The simplest macro is
+`StringValueCStr()` which returns a null-terminated `char*` for a `String`. The
+problem here is that a Ruby `String` _might contain nulls_ - in which case
+`StringValueCStr()` will raise an `ArgumentError`! Instead you can use the
+macros `StringValuePtr()` and `RSTRING_LEN()` to get a (possibly unterminated)
+`char*` and the string's length as a `long`.
+
 ## Footnotes ##
 
 [^1]: I haven't checked.
