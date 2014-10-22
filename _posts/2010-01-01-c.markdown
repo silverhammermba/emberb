@@ -51,13 +51,14 @@ more efficient than passing strings to the interpreter.
 Before we go any further, we need to understand `VALUE`s. Due to the danger of
 monkeying around inside the VM, the API never lets you directly access Ruby's
 objects. Instead, your C code will store and pass around _pointers_ to Ruby
-objects. These pointers can be passed to various API functions and macros that
-will safely access and manipulate the Ruby objects. `VALUE` is the API-defined C
-type for these pointers.
+objects (much like variables in Ruby contain pointers to objects). These
+pointers can be passed to various API functions and macros that will safely
+access and manipulate the Ruby objects. `VALUE` is the API-defined C type for
+these pointers.
 
 Probably the most frequent question you'll have is "what is the class of this
-`VALUE`'s object?". The easiest way to answer this with the API is to use the
-`TYPE` macro.
+`VALUE`?". The easiest way to answer this with the API is to use the `TYPE()`
+macro.
 
 {% highlight c %}
 {% include type.snip %}
@@ -66,23 +67,91 @@ Probably the most frequent question you'll have is "what is the class of this
 The various [`T_` constants](../readme#data-types) are defined by the API for all of
 Ruby's core classes and `TYPE()` simply returns the appropriate constant for
 the `VALUE`. Note that `TYPE()` works kind of like [`is_a?`][isa]: if you
-subclass `Array` it will return `T_ARRAY` for those instances. Since everything
-in Ruby `is_a?  Object`, `T_OBJECT` acts as a catch-all and will be returned for
-any class that doesn't fit any of the other constants. That's why the `default:`
-for the above switch should not normally be reached. Considering raising an
-[exception][exc] in that case.
+subclass `Array` it will return `T_ARRAY` for those instances. If none of the
+other constants make sense for the `VALUE`, `TYPE()` will return `T_OBJECT`
+(which makes sense since everything in Ruby `is_a? Object`). That's why the
+`default:` for the above switch should not normally be reached. Considering
+raising an [exception][exc] in that case.
 
+[exc]: #TODO
 [isa]: http://ruby-doc.org/core-2.1.3/Object.html#method-i-is_a-3F
 
-Of course you can also [call][meth] the Ruby method `.class` to get the `VALUE` pointing
-to the class object. If you have a specific class in mind, there are faster
-checks than that big switch statement:
+If you have a specific class in mind, there are faster checks than that big
+switch statement:
 
 {% highlight c %}
 {% include checktype.snip %}
 {% endhighlight %}
 
-[exc]: #TODO
+And of course you can also [call][meth] the Ruby method `.class` to get the `VALUE` pointing
+to the class object. We'll see how to do that later.
+
 [meth]: #TODO
 
+## Translation ##
+
+A few Ruby classes are analogous to C types. These classes will be your primary
+means of transferring data between C and Ruby.
+
+### Fixnum ###
+
+Ruby's `Fixnum` corresponds to C's `long`. The `FIX2LONG()` macro gives you the
+`long` for a `Fixnum`. `FIX2INT()` will give you an `int` instead, but will
+raise a `RangeError` if the result wouldn't fit (there's also `FIX2UINT()` if
+that one bit makes all the difference).
+
+As you might expect, `LONG2FIX()` and `INT2FIX()` are for translating in the
+other direction. There's also `CHR2FIX()` for `char` (though `FIX2CHR()` is
+missing for some reason).
+
+### Bignum ###
+
+Ruby's `Bignum` is for anything bigger than a `Fixnum`, so it works if you need
+to work with `long long`, for example. `rb_big2ll()` and `rb_big2ull()` will get
+you `long long` and `unsigned long long` from a `Bignum` (or raise a
+`RangeError` if appropriate).
+
+See [later section](#numeric) for the reverse direction.
+
+### Float ###
+
+Ruby's `Float` corresponds to C's `double`. The `RFLOAT_VALUE()` macro gives you the
+`double` for a `Float`.
+
+See [next section](#numeric) for the reverse direction.
+
+### Numeric ###
+
+There are a host of "NUM" macros that try to be more duck-typish about things.
+These will convert their C types to whatever Ruby `Numeric` subclass seems
+appropriate:
+
+* `INT2NUM()` for `int`
+* `UINT2NUM()` for `unsigned int`
+* `LONG2NUM()` for `long`
+* `ULONG2NUM()` for `unsigned long`
+* `LL2NUM()` for `long long`
+* `ULL2NUM()` for `unsigned long long`
+* `DBL2NUM()` for `double`
+
+And then there's the opposite direction, which will try to convert whatever
+`Numeric` to the desired C type. All of these should[^1] raise `RangeError` if
+there's no reasonable conversion.
+
+* `NUM2CHR()` for `char`
+* `NUM2SHORT()` for `short`
+* `NUM2USHORT()` for `unsigned short`
+* `NUM2INT()` for `int`
+* `NUM2UINT()` for `unsigned int`
+* `NUM2LONG()` for `long`
+* `NUM2ULONG()` for `unsigned long`
+* `NUM2LL()` for `long long`
+* `NUM2ULL()` for `unsigned long long`
+* `NUM2DBL()` for `double`
+
+Note that these macros will generally be a little slower than the ones from the
+previous sections as they need to do more checks.
+
 ## Footnotes ##
+
+[^1]: I haven't checked.
