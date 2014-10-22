@@ -1,23 +1,22 @@
 #include <ruby.h>
 #include <stdio.h>
 
-VALUE my_thread(VALUE i)
+int inspect(VALUE obj)
 {
-	rb_thread_sleep(2);
-	printf("%d\n", FIX2INT(i));
+	int status;
+	rb_gv_set("$xxx_do_not_use", obj);
+	rb_eval_string_protect("puts $xxx_do_not_use.inspect", &status);
+
+	return status;
 }
 
 int main(int argc, char* argv[])
 {
 	ruby_init();
 
-	VALUE threads[10];
+	VALUE obj = Qnil;
 
-	for (int i = 0; i < 10; ++i)
-		threads[i] = rb_thread_create(RUBY_METHOD_FUNC(my_thread), (void*)INT2FIX(i));
-
-	for (int i = 0; i < 10; ++i)
-		rb_funcall(threads[i], rb_intern("join"), 0);
+#include "raise.snip"
 
 	return ruby_cleanup(0);
 }
