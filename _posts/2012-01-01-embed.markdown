@@ -26,10 +26,10 @@ include the header and bookend your API calls with some function calls.
 {% include simple.c %}
 {% endhighlight %}
 
-`ruby_init()` constructs the VM. However, if the VM fails to start it will
-print an error and exit your program! If you would rather have a softer error,
-you can instead call `ruby_setup()` which returns a nonzero value if a failure
-occurred (unfortunately there is no way to get a message for the error[^err]).
+`ruby_init()` constructs the VM. However, if the VM fails to start it will print
+an error and exit your program! If you would rather have a softer error, you can
+instead call `ruby_setup()` which returns a nonzero value if a failure occurred
+(unfortunately it is not clear how to get a message for the error[^err]).
 
 `ruby_cleanup(0)` destructs the VM. If an error occurs during cleanup it returns
 a nonzero value &ndash; otherwise it returns the argument you passed it. This
@@ -40,9 +40,7 @@ During cleanup, the VM might evaluate more Ruby code (if you passed a block to
 `at_exit`, for example) which could raise an exception. `ruby_cleanup` handles
 these by just returning a nonzero value, but if you instead call
 `ruby_finalize()` they will be raised normally (see the section on
-[Exceptions][exc] for how to handle them).
-
-[exc]: #TODO
+[Exceptions](../c#rescue) for how to handle them).
 
 Here's an alternative example:
 
@@ -80,12 +78,14 @@ code when you call it. If you don't give it the filename of a script to load or
 code to run with `-e`, it will try to read from `stdin`. If you want to set
 options but _not_ run any Ruby code, you can pass it an empty line: `"-e "`.
 
-`ruby_options` returns a "node" that represents the compiled Ruby code. In some
+`ruby_options()` returns a "node" that represents the compiled Ruby code. In some
 cases (such as a syntax error) the node will be invalid and you shouldn't run
-it. `ruby_executable_node` checks for this. If the node is valid, you can run it
-with `ruby_exec_node`. The state returned by `ruby_executable_node` (through
-the pointer) and by `ruby_exec_node` can be passed to `ruby_cleanup` to print an
-appropriate error message[^hand].
+it. `ruby_executable_node()` checks for this. If the node is valid, you can run it
+with `ruby_exec_node()`. The state returned by `ruby_executable_node()` (through
+the pointer) and by `ruby_exec_node()` will be nonzero if an exception was
+rescued while compiling or running the code. You can [read the exception
+yourself](../c#rescue), or just pass `state` to `ruby_cleanup()` and it will
+print an appropriate error message.
 
 Ruby currently doesn't support any other way of compiling and running code
 separately.
@@ -96,13 +96,9 @@ Now you're ready to interact with Ruby! Go back to the [C API](../c).
 
 ## Footnotes ##
 
-[^err]: `ruby_init` uses `error_print()` to get an error message, but this
-        function isn't exposed to the API.
+[^err]: `ruby_init()` uses `error_print()` to get an error message, but this
+        function isn't exposed to the API. Is this just a normal exception?
 
 [^opt]: In my tests I couldn't get flags like `-w` and `-v` to do anything. This
         could be related to `ruby_prog_init()`. And really it should be possible
 		to do this without parsing command line options.
-
-[^hand]: `ruby_cleanup` does this by calling `error_handle(state)`, but again
-         this is not exposed to the API. It is not clear if this is possible to
-		 do without cleaning up the VM.
