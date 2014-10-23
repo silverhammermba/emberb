@@ -1,0 +1,25 @@
+VALUE global;
+
+VALUE global_getter(ID id)
+{
+	/* return some VALUE, perhaps based on global */
+}
+
+void global_setter(VALUE val, ID id)
+{
+	/* set global, perhaps using val */
+}
+
+void some_func()
+{
+	/* ... */
+
+	/* $x can be changed freely in Ruby */
+	rb_define_varialbe("$x", &global);
+	/* $y can only be read in Ruby */
+	rb_define_readonly_variable("$y", &global);
+	/* $z can be freely changed in Ruby, but using the specified functions */
+	rb_define_hooked_variable("$z", &global, global_getter, global_setter);
+
+	/* ... */
+}

@@ -349,6 +349,21 @@ generally not what you want, double check the names you choose!
 
 Everyone hates globals, but as always they're the easiest to use.
 
+{% highlight c %}
+{% include global.snip %}
+{% endhighlight %}
+
+The downside of that approach is that you'll get out-of-sync with Ruby if you
+forget to call the get/set functions at some point. There is another approach
+that automatically keeps a `VALUE` in sync with a Ruby global.
+
+{% highlight c %}
+{% include global2.snip %}
+{% endhighlight %}
+
+Note that the `VALUE` itself should be global in C &ndash; you don't want it to go
+out of scope while Ruby is using it!
+
 ### Instance Variables ###
 
 ### Constants ####
