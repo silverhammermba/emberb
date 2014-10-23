@@ -12,9 +12,10 @@ int main(int argc, char* argv[])
 	{
 		state = ruby_exec_node(node);
 	}
-	else
+
+	if (state)
 	{
-		// code didn't compile
+		/* handle exception, perhaps */
 	}
 
 	return ruby_cleanup(state);
