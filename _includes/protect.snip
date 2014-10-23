@@ -4,10 +4,10 @@ void some_function()
 
 	VALUE result;
 
-	int status;
-	result = rb_protect(dangerous_func, dangerous_arg, &status);
+	int state;
+	result = rb_protect(dangerous_func, dangerous_arg, &state);
 
-	if (status)
+	if (state)
 	{
 		/* handle exception */
 	}

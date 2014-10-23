@@ -102,7 +102,7 @@ switch statement:
 {% endhighlight %}
 
 And of course you can also call the Ruby method `.class` to get the `VALUE`
-pointing to the class object. We'll see how to do that [later](#methods).
+pointing to the class object. We'll see how to do that [later](#send).
 
 ## Translation ##
 
@@ -187,7 +187,7 @@ Conversely, if you have a null-terminated `char*`, you can use
 `rb_str_new_cstr()` to create a Ruby `String`. `rb_str_new()` constructs a
 `String` from a `char*` and the string's length (as a `long`)[^utf].
 
-## Methods ##
+## Send ##
 
 Now that you can make all of these Ruby objects, you'll probably want to start
 sending them methods. The easiest way to do this looks like this:
@@ -249,8 +249,8 @@ the code you're protecting to be in a function that takes and returns a single
 {% endhighlight %}
 
 Unless you wanted to protect a function of exactly this type, you will probably
-need to make a wrapper function in this format that makes the desired call. You
-will always read the rescued exception object the same way:
+need to make a wrapper function in this format that makes the desired call. The
+way to access a rescued exception is also independent of the way it is rescued:
 
 {% highlight c %}
 {% include handle.snip %}
@@ -279,11 +279,11 @@ very similar to Ruby's `rescue`.
 The first two arguments are the function to protect and its argument, the next
 two are the function to call if an exception is raised and its argument.
 `rb_rescue2()` is a varargs function, so after that comes a list of the
-exception classes you want to rescue. The last argument should always be `0` as
-this indicates the end of the class list. Just like in Ruby, any exceptions not
-in this list will not be rescued. If you just want to rescue `StandardError`
-(like a blank `rescue` in Ruby), you can use `rb_rescue()` which uses just the
-first four arguments of `rb_rescue2()`.
+exception classes you want to rescue. The last argument should always be `0` to
+indicate the end of the class list. Just like in Ruby, any exceptions not in
+this list will not be rescued. If you just want to rescue `StandardError` (like
+a blank `rescue` in Ruby), you can use `rb_rescue()` which uses just the first
+four arguments of `rb_rescue2()`.
 
 The API does not provide an easy way to run different rescue code for different
 exception classes as Ruby does. You'll need to rescue all the classes you want
@@ -310,24 +310,43 @@ all exceptions:
 
 Like `rb_rescue2()`, the first two arguments are for calling the function to
 protect. However, like `rb_eval_string_protect()`, if an exception is raised
-it returns `Qnil` and sets `status` to some nonzero value.
+it returns `Qnil` and sets `state` to some nonzero value.
 
 ### Ensure ###
 
-`rb_ensure()` works similarly to `rb_rescue()` except that it doesn't do
-anything about exceptions and the second function is _always_ called after the
-first. That may sound simple enough, but that means if you want the usual
-`begin; rescue; ensure; end` structure as in Ruby, you'll need another layer of
+`rb_ensure()` is similar to `rb_rescue()` except that it doesn't do anything
+about exceptions and the second function is _always_ called after the first.
+That may sound simple enough, but that means if you want the usual `begin;
+rescue; ensure; end` structure as in Ruby, you'll need another layer of
 wrapping:
 
 {% highlight c %}
 {% include ensure.snip %}
 {% endhighlight %}
 
-Note that the return value of `ensure_func()` is actually never used. If no
-exception occurs, `rb_rescue()` will return the value of `begin_func()` which
-returns the value of `dangerous_func()`. If an exception does occur,
+Note that just like in Ruby, the return value of `ensure_func()` is never used.
+If no exception occurs, `rb_rescue()` will return the value of `begin_func()`
+which returns the value of `dangerous_func()`. If an exception does occur,
 `rb_rescue()` returns the value of `rescue_func()`.
+
+## Definitions, Declarations ##
+
+So far we've been creating and modifying objects directly in the VM's memory,
+but none of our API calls have had a visible effect _within the Ruby code_. For
+example, a `String` made with `rb_str_new_cstr()` is only accessible within the
+API &ndash; there's no variable in Ruby for it.
+
+There are few ways to make things visible to Ruby code.
+
+### Global Variables ###
+
+### Instance Variables ###
+
+### Constants ####
+
+### Modules and Classes ###
+
+### Methods ###
 
 ## Footnotes ##
 
