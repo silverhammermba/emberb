@@ -1,35 +1,26 @@
-VALUE dangerous_func(VALUE obj)
-{
-	/* code that could raise an exception */
-	return obj;
-}
-
-VALUE ensure_func(VALUE obj)
+VALUE ensure_func(VALUE obj1)
 {
 	/* stuff to always run after dangerous_func */
-	return obj;
+	return obj2;
 }
 
 // wrap rb_ensure so we can rescue an exception
-VALUE begin_func(VALUE obj)
+VALUE begin_func(VALUE dangerous_arg)
 {
-	return rb_ensure(dangerous_func, obj, ensure_func, obj);
+	return rb_ensure(dangerous_func, dangerous_arg, ensure_func, Qnil);
 }
 
-VALUE rescue_func(VALUE obj)
+VALUE rescue_func(VALUE obj1)
 {
-	VALUE exception = rb_errinfo();
-	rb_set_errinfo(Qnil);
-
-	/* do something with exception */
-	return obj;
+	/* handle exception */
+	return obj2;
 }
 
 void some_function()
 {
-	ruby_init();
+	/* ... */
 
-	rb_rescue(begin_func, Qnil, rescue_func, Qnil);
+	VALUE result = rb_rescue(begin_func, dangerous_arg, rescue_func, rescue_arg);
 
-	ruby_cleanup(0);
+	/* ... */
 }

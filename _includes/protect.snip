@@ -1,0 +1,20 @@
+void some_function()
+{
+	/* ... */
+
+	VALUE result;
+
+	int status;
+	result = rb_protect(dangerous_func, dangerous_arg, &status);
+
+	if (status)
+	{
+		/* handle exception */
+	}
+	else
+	{
+		/* no exception occured */
+	}
+
+	/* ... */
+}

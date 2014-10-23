@@ -1,22 +1,32 @@
 #include <ruby.h>
 #include <stdio.h>
 
-int inspect(VALUE obj)
+VALUE dangerous_func(VALUE obj)
 {
-	int status;
-	rb_gv_set("$xxx_do_not_use", obj);
-	rb_eval_string_protect("puts $xxx_do_not_use.inspect", &status);
+	rb_require("blah");
+	return Qtrue;
+}
 
-	return status;
+VALUE rescue_func(VALUE obj)
+{
+
+	return Qfalse;
 }
 
 int main(int argc, char* argv[])
 {
 	ruby_init();
 
-	VALUE obj = Qnil;
+	VALUE result;
 
-#include "raise.snip"
+	int status;
+	result = rb_protect(dangerous_func, Qtrue, &status);
+
+	if (status)
+	{
+		VALUE exception = rb_errinfo();
+		rb_funcall(rb_mKernel, rb_intern("puts"), 1, exception);
+	}
 
 	return ruby_cleanup(0);
 }
