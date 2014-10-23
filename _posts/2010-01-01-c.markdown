@@ -336,9 +336,18 @@ but none of our API calls have had a visible effect _within the Ruby code_. For
 example, a `String` made with `rb_str_new_cstr()` is only accessible within the
 API &ndash; there's no variable in Ruby for it.
 
-There are few ways to make things visible to Ruby code.
+There are a few ways to make things visible to Ruby but they all work the same
+general way: by defining some name that Ruby can access e.g. variable name,
+method name, etc.  A general warning though: unlike Ruby, when you give
+something an invalid name **the API won't complain**. Ruby will rase a
+`SyntaxError` or `NameError` if you try to name a class `foo` (not constant) or
+an instance variable `bar` (with no `@`), but the API will happily create them.
+The API handles this by **not exposing invalid names to Ruby**.  Since that's
+generally not what you want, double check the names you choose!
 
 ### Global Variables ###
+
+Everyone hates globals, but as always they're the easiest to use.
 
 ### Instance Variables ###
 
