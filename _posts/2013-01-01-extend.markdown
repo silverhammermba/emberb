@@ -55,9 +55,10 @@ important: it defines the entry point of your C code and the name of the
 compiled library! Basically, the argument is the name of your extension.
 
 You can modify a few of the generated Makefile variables by modifying the
-corresponding globals in Ruby: `$CFLAGS`, `$CPPFLAGS`, and `$LDFLAGS`[^1]. You can
-also use the `$objs` global to define a list of object files for the Makefile if
-it's method of automatically generating targets doesn't work for your extension.
+corresponding globals in Ruby: `$CFLAGS`, `$CPPFLAGS`, and `$LDFLAGS`[^glob].
+You can also use the `$objs` global to define a list of object files for the
+Makefile if it's method of automatically generating targets doesn't work for
+your extension.
 
 All of the `mkmf` functions and their options are well-documented
 [online][mkmf]. Note that in addition to the functions for generating
@@ -68,7 +69,7 @@ layouts, different file dependencies, etc.
 
 ### Execution ###
 
-The rest couldn't be simpler[^2]
+The rest couldn't be simpler[^argv]
 
     $ ruby extconf.rb
 	$ make
@@ -110,7 +111,7 @@ interesting stuff.
 After you've got your extension working nicely, you may want to bundle up it as
 an easily distributable Ruby gem. rubygems.org has a [detailed guide][rbg] on
 creating gems, but as far as C extensions go you just need to tell the spec
-about `extconf.rb`[^4]:
+about `extconf.rb`[^rbg]:
 
 {% highlight ruby %}
 {% include foobar.gemspec %}
@@ -123,13 +124,10 @@ subdirectories of `ext/` and pass all of the `extconf.rb`s to the spec.
 
 ## Footnotes ##
 
-[^1]: I can only find these globals documented in README.EXT.
+[^glob]: I can only find these globals documented in README.EXT.
 
-[^2]: README.EXT [hints](../readme#generate-makefile) that `mkmf` parses certain
+[^argv]: README.EXT [hints](../readme#generate-makefile) that `mkmf` parses certain
 	  command line flags e.g.  `--vendor`. But I also can't find this documented
 	  anywhere.
 
-[^3]: See [README.EXT](../readme#write-the-c-code). Though I really don't
-      understand why it recommends this.
-
-[^4]: http://guides.rubygems.org/gems-with-extensions/
+[^rbg]: http://guides.rubygems.org/gems-with-extensions/

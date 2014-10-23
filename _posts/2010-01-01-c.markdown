@@ -157,8 +157,8 @@ appropriate:
 * `DBL2NUM()` for `double`
 
 And then there's the opposite direction, which will try to convert whatever
-`Numeric` to the desired C type. All of these should[^1] raise `RangeError` if
-there's no reasonable conversion.
+`Numeric` to the desired C type. All of these should[^range] raise `RangeError`
+if there's no reasonable conversion.
 
 * `NUM2CHR()` for `char`
 * `NUM2SHORT()` for `short`
@@ -181,11 +181,11 @@ Ruby's `String` kinda corresponds to C's `char*`. The simplest macro is
 problem here is that a Ruby `String` _might contain nulls_ - in which case
 `StringValueCStr()` will raise an `ArgumentError`! Instead you can use the
 macros `StringValuePtr()` and `RSTRING_LEN()` to get a (possibly unterminated)
-`char*` and the string's length as a `long`[^2].
+`char*` and the string's length as a `long`[^enc].
 
 Conversely, if you have a null-terminated `char*`, you can use
 `rb_str_new_cstr()` to create a Ruby `String`. `rb_str_new()` constructs a
-`String` from a `char*` and the string's length (as a `long`)[^3].
+`String` from a `char*` and the string's length (as a `long`)[^utf].
 
 ## Methods ##
 
@@ -232,7 +232,7 @@ To raise an exception, use:
 
 The first and second arguments are the exception class and message, just like
 `raise` in Ruby (all exception classes in the API start with `rb_e`). The big
-difference is that the message is a format string just like in `printf`[^4],
+difference is that the message is a format string just like in `printf`[^pi],
 letting you more easily build a useful message.
 
 There is no shortcut for re-raising the last exception. Just call
@@ -258,8 +258,8 @@ will always read the rescued exception object the same way:
 
 `rb_errinfo()` essentially gives you the `VALUE` of Ruby's `$!` (which will be
 `Qnil` if no exception occured). Unlike in Ruby, the API does not automatically
-clear `$!` after a rescue so you need to clear it manually[^5]. Otherwise later API
-calls might read the old value and think an exception has occurred.
+clear `$!` after a rescue so you need to clear it manually[^clear]. Otherwise
+later API calls might read the old value and think an exception has occurred.
 
 Next we will go over several methods of rescuing; you can use whichever you
 like, but I think that generally the right choice is determined by your
@@ -331,19 +331,19 @@ returns the value of `dangerous_func()`. If an exception does occur,
 
 ## Footnotes ##
 
-[^1]: I haven't checked.
+[^range]: I haven't checked.
 
-[^2]: I'm not sure how to deal with different encodings (especially wide ones).
+[^enc]: I'm not sure how to deal with different encodings (especially wide ones).
 
-[^3]: Again, the documention [mentions](../readme#string-functions) that there
+[^utf]: Again, the documention [mentions](../readme#string-functions) that there
 	  are ways to create UTF-8 strings (`rb_utf8_str_new`), but I couldn't get
 	  them to work.
 
-[^4]: The documentation [claims](../readme#exceptions-and-errors) to support the
+[^pi]: The documentation [claims](../readme#exceptions-and-errors) to support the
 	  additional format directives `%i` and `%+i` for `to_s` and `inspect` (both
 	  take a `VALUE`) but these printed garbage in my tests.
 
-[^5]: The documentation [states](../reamde#control-structure) that "You have to
+[^clear]: The documentation [states](../reamde#control-structure) that "You have to
 	 clear the error info [when] ignoring the caught exception". But I can't
 	 find any documentation of when it would be cleared for you &ndash; it seems
 	 like you _always_ have to clear it.
