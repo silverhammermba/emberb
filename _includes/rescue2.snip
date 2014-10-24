@@ -10,7 +10,7 @@ void some_function()
 
 	VALUE result;
 
-	// rescue TypeError and RangeError
+	/* rescue TypeError and RangeError */
 	result = rb_rescue2(dangerous_func, dangerous_arg, rescue_func, rescue_arg, rb_eTypeError, rb_eRangeError, 0);
 
 	/* ... */

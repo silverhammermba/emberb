@@ -19,10 +19,10 @@ void some_func()
 	/* $x can be changed freely in Ruby */
 	rb_define_varialbe("$x", &global);
 
-	/* $y can be read in Ruby, but changing it will raise NameError */
+	/* assigning a new value to $y in Ruby will raise a NameError */
 	rb_define_readonly_variable("$y", &global);
 
-	/* $z can be freely changed in Ruby, but through the specified functions */
+	/* $z can be changed freely in Ruby, but through the specified functions */
 	rb_define_hooked_variable("$z", &global, global_getter, global_setter);
 
 	/* ... */

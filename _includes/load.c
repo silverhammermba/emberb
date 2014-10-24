@@ -1,20 +1,15 @@
 #include <ruby.h>
 #include <stdio.h>
 
-VALUE global;
-
 int main(int argc, char* argv[])
 {
 	ruby_init();
 
+	rb_define_global_const("UNDEFINED", Qundef);
+
 	int status;
 
-	printf("Testing R/W\n");
-	/* $x can be changed freely in Ruby */
-	rb_eval_string_protect("$x = true", &status);
-	rb_define_variable("$x", &global);
-	rb_eval_string_protect("p $x", &status);
-	//Check_Type(global, T_TRUE);
+	rb_eval_string_protect("p UNDEFINED", &status);
 
-	return ruby_cleanup(0);
+	return ruby_cleanup(status);
 }

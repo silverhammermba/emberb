@@ -4,7 +4,7 @@ VALUE ensure_func(VALUE obj1)
 	return obj2;
 }
 
-// wrap rb_ensure so we can rescue an exception
+/* wrap rb_ensure so we can rescue an exception */
 VALUE begin_func(VALUE dangerous_arg)
 {
 	return rb_ensure(dangerous_func, dangerous_arg, ensure_func, Qnil);

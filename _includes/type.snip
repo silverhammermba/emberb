@@ -1,22 +1,20 @@
 VALUE obj;
 
-// obj gets assigned a reference to some Ruby object...
-
 switch (TYPE(obj))
 {
 	case T_NIL:
-		// handle NilClass
+		/* handle NilClass */
 		break;
 	case T_CLASS:
-		// handle Class
+		/* handle Class */
 		break;
 	case T_STRING:
-		// handle String
+		/* handle String */
 		break;
 	/* ... */
 	case T_OBJECT:
-		// handle everything else
+		/* handle everything else */
 		break;
 	default:
-		// XXX shouldn't get here! The VALUE must be invalid
+		/* XXX shouldn't get here! The VALUE must be invalid */
 }
