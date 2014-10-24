@@ -366,13 +366,15 @@ will be automatically synchronized with one.
 
 Note that the `VALUE` should be initialized before you create the global in Ruby
 and it should be global in C as well &ndash; you don't want it to go out of
-scope while Ruby is using it! For `rb_define_hooked_variable()`, you can pass
-`0` for the getter/setter if you don't need both functions.
+scope while Ruby is using it! For `rb_define_readonly_variable()` the object
+is not frozen, so it can still be modified from Ruby if it is mutable. For
+`rb_define_hooked_variable()`, you can pass `0` for the getter/setter if you
+don't need both functions.
 
 ### Instance Variables ###
 
 You can get/set instance variables just like globals, but you must use an `ID`
-like with `rb_funcall`.
+like with `rb_funcall()`.
 
 {% highlight c %}
 {% include ivar.snip %}
@@ -382,7 +384,11 @@ There isn't an automatic way to synchronize like with globals.
 
 ### Constants ####
 
-Constants work similarly, but with some additional scope options.
+Constants work similarly, but you must specify the module to define them under:
+
+{% highlight c %}
+{% include constant.snip %}
+{% endhighlight %}
 
 ### Modules and Classes ###
 
