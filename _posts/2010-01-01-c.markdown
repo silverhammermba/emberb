@@ -384,10 +384,19 @@ There isn't an automatic way to synchronize like with globals.
 
 ### Constants ####
 
-Constants work similarly, but you must specify the module to define them under:
+You define constants similarly, but you must specify the module to define them
+under:
 
 {% highlight c %}
 {% include constant.snip %}
+{% endhighlight %}
+
+Getting a constant's `VALUE` is a little nuanced. The API function you call
+depends on what you want Ruby to do if the constant is _not_ defined in the
+module you specify:
+
+{% highlight c %}
+{% include const_get.snip %}
 {% endhighlight %}
 
 ### Modules and Classes ###
