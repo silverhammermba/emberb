@@ -19,8 +19,8 @@ read it.
 In the next section I'll say "everything you can do in Ruby, you can also do
 using [the] C API". This is true, but it really should be followed with "...but
 it will generally be more unintuitive in C". If you don't have a strong
-intuition for the design of the language and the best practices in idiomatic
-Ruby, it can be extra hard to find the API functions that do what you want.
+intuition for the design of Ruby and the best practices in idiomatic Ruby, it
+can be extra hard to find the API functions that do what you want.
 
 ## The Two Paths ##
 
@@ -52,16 +52,16 @@ The simplest way to run some Ruby code from C is to `eval` it
 
 This is a good fallback if you can't find an API function for something that you
 want to do. `rb_eval_string_protect()` returns the result of the Ruby code
-(remember that all Ruby code returns something) and sets `state` to some nonzero
-value if any exception is raised. `VALUE` is the C data type for all Ruby
-objects, as explained in the next section.
+(all Ruby code returns something) and sets `state` to some nonzero value if any
+exception is raised. `VALUE` is the C data type for all Ruby objects, as
+explained in the next section.
 
 If `state` is nonzero, `result` will be a `VALUE` representing `nil` and you
 should handle the exception. Alternatively, you can use `rb_eval_string()` which
 doesn't take a `state` argument and instead raises any exceptions normally. See
 [Exceptions](#exceptions) for how to handle both of these cases.
 
-However, just like `eval` in Ruby, use of this function is not good practice.
+However, like using `eval` in Ruby, using this function is not a good practice.
 It's inefficient since it has to invoke the parser and it somewhat defeats the
 point of writing in C. Avoid using it whenever possible.
 
@@ -84,8 +84,8 @@ macro.
 {% endhighlight %}
 
 Given a `VALUE`, `TYPE()` returns one of the [`T_`
-constants](../readme#data-types) defined by the API for the core classes. Note
-that `TYPE()` works kind of like [`is_a?`][isa]: if you subclass `Array` it will
+constants](../readme#data-types) defined by the API for the core classes.
+`TYPE()` works kind of like [`is_a?`][isa]: if you subclass `Array` it will
 return `T_ARRAY` for those instances. If none of the other constants make sense
 for the `VALUE`, `TYPE()` will return `T_OBJECT` (which makes sense since
 everything in Ruby `is_a?  Object`). That's why the `default:` for the above
@@ -175,8 +175,8 @@ if there's no reasonable conversion.
 * `NUM2ULL()` for `unsigned long long`
 * `NUM2DBL()` for `double`
 
-Note that these macros will generally be a little slower than the ones from the
-previous sections as they need to do more checks.
+These macros will generally be a little slower than the ones from the previous
+sections as they need to do more checks.
 
 #### String ####
 
@@ -194,7 +194,7 @@ Conversely, if you have a null-terminated `char*`, you can use
 ## Send ##
 
 Now that you can make all of these Ruby objects, you'll probably want to start
-sending them methods. The easiest way to do this looks like this:
+sending them methods. The easiest way to do that looks like this:
 
 {% highlight c %}
 {% include funcall.snip %}
@@ -234,13 +234,9 @@ To raise an exception, use:
 {% include raise.snip %}
 {% endhighlight %}
 
-The first and second arguments are the exception class and message, just like
-`raise` in Ruby (all exception classes in the API start with `rb_e`). The big
-difference is that the message is a format string just like in `printf`[^pi],
-letting you more easily build a useful message.
-
-There is no shortcut for re-raising the last exception. Just call
-`Kernel.raise`.
+The first and second arguments are the exception class and message &ndash; like
+`raise` in Ruby. The big difference is that the message is a format string like
+in `printf`[^pi], letting you more easily build a useful message.
 
 ### Rescue ###
 
@@ -284,9 +280,9 @@ The first two arguments are the function to protect and its argument, the next
 two are the function to call if an exception is raised and its argument.
 `rb_rescue2()` is a varargs function, so after that comes a list of the
 exception classes you want to rescue. The last argument should always be `0` to
-indicate the end of the class list. Just like in Ruby, any exceptions not in
-this list will not be rescued. If you just want to rescue `StandardError` (like
-a blank `rescue` in Ruby), you can use `rb_rescue()` which uses just the first
+indicate the end of the class list. Like `rescue` in Ruby, any exceptions not in
+this list will not be rescued. If you want to rescue `StandardError` (like a
+blank `rescue` in Ruby), you can use `rb_rescue()` which takes just the first
 four arguments of `rb_rescue2()`.
 
 The API does not provide an easy way to run different rescue code for different
@@ -314,7 +310,9 @@ all exceptions:
 
 Like `rb_rescue2()`, the first two arguments are for calling the function to
 protect. However, like `rb_eval_string_protect()`, if an exception is raised
-it returns `Qnil` and sets `state` to some nonzero value.
+it returns `Qnil` and sets `state` to some nonzero value. If you want to reraise
+the exception, pass `state` to `rb_jump_tag()` (this works for
+`rb_eval_string_protect()` too).
 
 ### Ensure ###
 
@@ -328,9 +326,9 @@ wrapping:
 {% include ensure.snip %}
 {% endhighlight %}
 
-Note that just like in Ruby, the return value of `ensure_func()` is never used.
-If no exception occurs, `rb_rescue()` will return the value of `begin_func()`
-which returns the value of `dangerous_func()`. If an exception does occur,
+Like `ensure` in Ruby, the return value of `ensure_func()` is never used.  If no
+exception occurs, `rb_rescue()` will return the value of `begin_func()` which
+returns the value of `dangerous_func()`. If an exception does occur,
 `rb_rescue()` returns the value of `rescue_func()`.
 
 ## Definitions, Declarations ##
@@ -342,12 +340,12 @@ API &ndash; there's no variable in Ruby for it.
 
 There are a few ways to make things visible to Ruby but they all work the same
 general way: by defining some name that Ruby can access e.g. variable name,
-method name, etc. A general warning though: unlike Ruby, when you give
-something an invalid name **the API won't complain**. Ruby will rase a
-`SyntaxError` or `NameError` if you try to name a class `foo` (not constant) or
-an instance variable `bar` (with no `@`), but the API will happily create them.
-The API handles this by **not exposing invalid names to Ruby**.  Since that's
-generally not what you want, double check the names you choose!
+method name, etc. A general warning though: unlike Ruby, **the API lets you give
+things invalid names**. Ruby will rase a `SyntaxError` or `NameError` if you try
+to name a class `foo` (not constant) or an instance variable `bar` (with no
+`@`), but the API will happily create them.  The API handles this by **not
+exposing invalid names to Ruby**. Since that's generally not what you want,
+double check the names you choose!
 
 ### Global Variables ###
 
@@ -364,28 +362,28 @@ will be automatically synchronized with one.
 {% include global2.snip %}
 {% endhighlight %}
 
-Note that the `VALUE` should be initialized before you create the global in Ruby
-and it should be global in C as well &ndash; you don't want it to go out of
-scope while Ruby is using it! For `rb_define_readonly_variable()` the object
-is not frozen, so it can still be modified from Ruby if it is mutable. For
+The `VALUE` should be initialized before you create the global in Ruby and it
+should be global in C as well &ndash; you don't want it to go out of scope while
+Ruby is using it! For `rb_define_readonly_variable()` the object is not frozen,
+so it can still be modified from Ruby if it is mutable. For
 `rb_define_hooked_variable()`, you can pass `0` for the getter/setter if you
 don't need both functions.
 
 ### Instance Variables ###
 
-You can get/set instance variables just like globals, but you must use an `ID`
-like with `rb_funcall()`.
+Getting/setting instance variables requires an object to store the variable and
+you must use an `ID` like with `rb_funcall()`.
 
 {% highlight c %}
 {% include ivar.snip %}
 {% endhighlight %}
 
-There isn't an automatic way to synchronize like with globals.
+There isn't an automatic way to synchronize instance variables like you can with
+globals.
 
 ### Constants ####
 
-You define constants similarly, but you must specify the module to define them
-under:
+You define constants similarly, but you specify the module to define them under:
 
 {% highlight c %}
 {% include constant.snip %}
@@ -417,7 +415,7 @@ module you specify:
 	  additional format directives `%i` and `%+i` for `to_s` and `inspect` (both
 	  take a `VALUE`) but these printed garbage in my tests.
 
-[^clear]: The documentation [states](../reamde#control-structure) that "You have to
+[^clear]: The documentation [states](../readme#control-structure) that "You have to
 	 clear the error info [when] ignoring the caught exception". But I can't
 	 find any documentation of when it would be cleared for you &ndash; it seems
 	 like you _always_ have to clear it.
