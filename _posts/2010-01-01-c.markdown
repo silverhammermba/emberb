@@ -104,18 +104,22 @@ switch statement:
 And of course you can also call the Ruby method `.class` to get the `VALUE`
 pointing to the class object. We'll see how to do that [later](#send).
 
-## Translation ##
+### Constants ###
+
+Most of the standard Ruby constants have global `VALUE`s defined for them in the
+API so you don't need an API call to access them. Modules are prefixed with
+`rb_m` e.g. `rb_mKernel`; classes are prefixed with `rb_c` e.g.  `rb_cObject`;
+subclasses of `Exception` are prefixed with `rb_e` e.g.  `rb_eRuntimeError`; and
+the standard IO streams just have `rb_` e.g.  `rb_stderr`. `nil`, `false`, and
+`true` are prefixed with `Q` e.g. `Qnil`. As a convenience, `Qfalse` is also
+false in C (`0`).
+
+### Translation ###
 
 A few Ruby classes are analogous to C types. These classes will be your primary
 means of transferring data between C and Ruby.
 
-### Constants ###
-
-Ruby's constants each get a corresponding constant `VALUE` in the API: `Qnil`
-for `nil`, `Qfalse` for `false`, and `Qtrue` for `true`. As a convenience,
-`Qfalse` is also false in C (i.e. `0`).
-
-### Fixnum ###
+#### Fixnum ####
 
 Ruby's `Fixnum` corresponds to C's `long`. The `FIX2LONG()` macro gives you the
 `long` for a `Fixnum`. `FIX2INT()` will give you an `int` instead, but will
@@ -126,7 +130,7 @@ As you might expect, `LONG2FIX()` and `INT2FIX()` are for translating in the
 other direction. There's also `CHR2FIX()` for `char` (though `FIX2CHR()` is
 missing for some reason).
 
-### Bignum ###
+#### Bignum ####
 
 Ruby's `Bignum` is for anything bigger than a `Fixnum`, so it works if you need
 to work with `long long`, for example. `rb_big2ll()` and `rb_big2ull()` will get
@@ -135,14 +139,14 @@ you `long long` and `unsigned long long` from a `Bignum` (or raise a
 
 See [Numeric](#numeric) for the reverse direction.
 
-### Float ###
+#### Float ####
 
 Ruby's `Float` corresponds to C's `double`. The `RFLOAT_VALUE()` macro gives you the
 `double` for a `Float`.
 
 See [Numeric](#numeric) for the reverse direction.
 
-### Numeric ###
+#### Numeric ####
 
 There are a host of "NUM" macros that try to be more duck-typish about things.
 These will convert their C types to whatever Ruby `Numeric` subclass seems
@@ -174,7 +178,7 @@ if there's no reasonable conversion.
 Note that these macros will generally be a little slower than the ones from the
 previous sections as they need to do more checks.
 
-### String ###
+#### String ####
 
 Ruby's `String` kinda corresponds to C's `char*`. The simplest macro is
 `StringValueCStr()` which returns a null-terminated `char*` for a `String`. The
