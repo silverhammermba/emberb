@@ -374,7 +374,11 @@ like with `rb_funcall`.
 {% include ivar.snip %}
 {% endhighlight %}
 
+There isn't an automatic way to synchronize like with globals.
+
 ### Constants ####
+
+Constants work similarly, but with some additional scope options.
 
 ### Modules and Classes ###
 
