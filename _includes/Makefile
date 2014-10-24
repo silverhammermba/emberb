@@ -7,4 +7,4 @@ all: $(BINS)
 	$(CC) $(CFLAGS) `pkg-config --cflags --libs ruby-2.1` -o $@ $<
 
 ruby.h:
-	echo '#include <ruby.h>' | $(CC) -E -P `pkg-config --cflags ruby-2.1` -xc -o ruby.h -
+	echo '#include <ruby.h>' | $(CC) -E -dD -P `pkg-config --cflags ruby-2.1` -xc -o ruby.h -
