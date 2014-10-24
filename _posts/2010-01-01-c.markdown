@@ -338,7 +338,7 @@ API &ndash; there's no variable in Ruby for it.
 
 There are a few ways to make things visible to Ruby but they all work the same
 general way: by defining some name that Ruby can access e.g. variable name,
-method name, etc.  A general warning though: unlike Ruby, when you give
+method name, etc. A general warning though: unlike Ruby, when you give
 something an invalid name **the API won't complain**. Ruby will rase a
 `SyntaxError` or `NameError` if you try to name a class `foo` (not constant) or
 an instance variable `bar` (with no `@`), but the API will happily create them.
@@ -353,18 +353,26 @@ Everyone hates globals, but as always they're the easiest to use.
 {% include global.snip %}
 {% endhighlight %}
 
-The downside of that approach is that you'll get out-of-sync with Ruby if you
-forget to call the get/set functions at some point. There is another approach
-that automatically keeps a `VALUE` in sync with a Ruby global.
+If you're frequently accessing Ruby's globals, you can set up a `VALUE` which
+will be automatically synchronized with one.
 
 {% highlight c %}
 {% include global2.snip %}
 {% endhighlight %}
 
-Note that the `VALUE` itself should be global in C &ndash; you don't want it to go
-out of scope while Ruby is using it!
+Note that the `VALUE` should be initialized before you create the global in Ruby
+and it should be global in C as well &ndash; you don't want it to go out of
+scope while Ruby is using it! For `rb_define_hooked_variable()`, you can pass
+`0` for the getter/setter if you don't need both functions.
 
 ### Instance Variables ###
+
+You can get/set instance variables just like globals, but you must use an `ID`
+like with `rb_funcall`.
+
+{% highlight c %}
+{% include ivar.snip %}
+{% endhighlight %}
 
 ### Constants ####
 

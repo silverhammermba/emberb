@@ -1,32 +1,20 @@
 #include <ruby.h>
 #include <stdio.h>
 
-VALUE dangerous_func(VALUE obj)
-{
-	rb_require("blah");
-	return Qtrue;
-}
-
-VALUE rescue_func(VALUE obj)
-{
-
-	return Qfalse;
-}
+VALUE global;
 
 int main(int argc, char* argv[])
 {
 	ruby_init();
 
-	VALUE result;
-
 	int status;
-	result = rb_protect(dangerous_func, Qtrue, &status);
 
-	if (status)
-	{
-		VALUE exception = rb_errinfo();
-		rb_funcall(rb_mKernel, rb_intern("puts"), 1, exception);
-	}
+	printf("Testing R/W\n");
+	/* $x can be changed freely in Ruby */
+	rb_eval_string_protect("$x = true", &status);
+	rb_define_variable("$x", &global);
+	rb_eval_string_protect("p $x", &status);
+	//Check_Type(global, T_TRUE);
 
 	return ruby_cleanup(0);
 }
