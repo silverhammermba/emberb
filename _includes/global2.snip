@@ -17,7 +17,7 @@ void some_func()
 	/* initialize global first! */
 
 	/* $x can be changed freely in Ruby */
-	rb_define_varialbe("$x", &global);
+	rb_define_variable("$x", &global);
 
 	/* assigning a new value to $y in Ruby will raise a NameError */
 	rb_define_readonly_variable("$y", &global);

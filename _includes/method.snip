@@ -1,0 +1,18 @@
+/* normal hardcoded arg list (can have up to 17 args) */
+VALUE my_method(VALUE self, VALUE arg1, VALUE arg2)
+{
+	/* ... */
+}
+
+/* or, pass all args as a Ruby Array */
+VALUE my_method(VALUE self, VALUE args)
+{
+	/* ... */
+}
+
+/* or, pass all args as a C array */
+VALUE my_method(int argc, VALUE* argv, VALUE self)
+{
+	/* ... */
+}
+

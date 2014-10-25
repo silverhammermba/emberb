@@ -5,11 +5,11 @@ int main(int argc, char* argv[])
 {
 	ruby_init();
 
-	rb_define_global_const("UNDEFINED", Qundef);
+	VALUE cFoo = rb_define_class("Foo", rb_cObject);
+	VALUE foo = rb_funcall(cFoo, rb_intern("new"), 0);
 
-	int status;
+	rb_iv_set(foo, "@x", Qtrue);
+	Check_Type(rb_iv_get(foo, "@x"), T_TRUE);
 
-	rb_eval_string_protect("p UNDEFINED", &status);
-
-	return ruby_cleanup(status);
+	return ruby_cleanup(0);
 }

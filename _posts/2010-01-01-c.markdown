@@ -399,7 +399,34 @@ module you specify:
 
 ### Modules and Classes ###
 
+Defining modules is super easy.
+
+{% highlight c %}
+{% include module.snip %}
+{% endhighlight %}
+
+Classes work the same but you need to give them a superclass.
+
+{% highlight c %}
+{% include class.snip %}
+{% endhighlight %}
+
+Classes are assigned to constants, so you access them the same way as other
+constants. I'll also mention briefly that there's `rb_cv_get/set()` for class
+variables. They work just like the API functions for instance variables but the
+first argument must be a class. Surprising.
+
 ### Methods ###
+
+Here's where it gets interesting again. There are many kinds of API calls for
+defining methods, but you'll need the same three things for pretty much all of
+them: the `VALUE` for the class getting the method, a `char*` for the method
+name, and a C function which the method will call. The function should always
+return a `VALUE`, but there are three ways you can define its arguments:
+
+{% highlight c %}
+{% include method.snip %}
+{% endhighlight %}
 
 ## Footnotes ##
 
