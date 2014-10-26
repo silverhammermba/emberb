@@ -191,6 +191,25 @@ Conversely, if you have a null-terminated `char*`, you can use
 contain nulls, use `rb_str_new()` which takes a `char*` and the string's length
 (as a `long`)[^utf].
 
+#### Symbol ####
+
+The API defines a C type `ID` which corresponds to Ruby's `Symbol`. Just like
+how Ruby passes around `Symbol`s as method or variable names, many API calls
+that need a method or variable name use an `ID`. To convert between a `Symbol`
+and an `ID` use the `SYM2ID()` and `ID2SYM()` macros. Instead of a `Symbol` you
+may want to convert to/from a `char*` C string. To get an `ID` from a `char*`
+use `rb_intern()` and for the reverse use `rb_id2name()`.
+
+Since many API functions require an `ID` and in many cases you will not have the
+appropriate `ID` at hand, the API also defines a slew of functions that instead
+take a `char*` and which do the `rb_intern()` call for you. Since these
+functions are often more readable and the overhead of the `rb_intern()` call is
+negligible, I have opted to use the `char*` versions of the API functions
+wherever possible in this guide. If you find yourself frequently using a certain
+C string API calls, you may see some performance benefit by storing the `ID` and
+using the `ID` versions of the functions (though you'll have to look these up
+yourself in the Ruby headers).
+
 ## Send ##
 
 Now that you can make all of these Ruby objects, you'll probably want to start
@@ -206,11 +225,9 @@ This is roughly equivalent to the Ruby code
 {% include funcall.rb %}
 {% endhighlight %}
 
-The first argument is the receiver. The next uses `rb_intern` to return an `ID`
-for the method name. `ID` is the C data type corresponding to `Symbol` in Ruby.
-The same way that Ruby passes around symbols for method names, the C API passes
-around `ID`s. The third argument is the number of method arguments, which is
-needed since `rb_funcall` is a varargs function. Then come the actual method
+The first argument is the receiver. The next is the [`ID`](#symbol) for the
+method name. The third argument is the number of method arguments, which is
+needed since `rb_funcall()` is a varargs function. Then come the actual method
 arguments.
 
 Alternatively, you can use `rb_funcallv()` where the fourth argument is a
