@@ -367,12 +367,14 @@ should be global in C as well &ndash; you don't want it to go out of scope while
 Ruby is using it! For `rb_define_readonly_variable()` the object is not frozen,
 so it can still be modified from Ruby if it is mutable. For
 `rb_define_hooked_variable()`, you can pass `0` for the getter/setter if you
-don't need both functions.
+want to synchronize normally for that operation. Or you can throw out `global`
+entirely with `rb_define_virtual_variable()` though of course the getter and
+setter _must_ be defined in that case.
 
 ### Instance Variables ###
 
-Getting/setting instance variables requires an object to store the variable and
-you must use an `ID` like with `rb_funcall()`.
+Getting/setting instance variables is similar to the simple way of accessing
+globals, but of course you need an object to get the variable from.
 
 {% highlight c %}
 {% include ivar.snip %}
@@ -418,14 +420,75 @@ first argument must be a class. Surprising.
 
 ### Methods ###
 
+#### Preparation ####
+
 Here's where it gets interesting again. There are many kinds of API calls for
-defining methods, but you'll need the same three things for pretty much all of
-them: the `VALUE` for the class getting the method, a `char*` for the method
-name, and a C function which the method will call. The function should always
-return a `VALUE`, but there are three ways you can define its arguments:
+defining methods, but before you use any of them you'll need a C function which
+the method will call. The function must return a `VALUE`, and there are three
+ways you can define its arguments:
 
 {% highlight c %}
 {% include method.snip %}
+{% endhighlight %}
+
+So really the API only lets you define two types of methods: ones that take a
+fixed number of arguments[^self], and ones that slurp up all their arguments.
+What about all of Ruby's fancy argument features? Where are optional args,
+keyword args, options hashes, blocks, and all the mixtures of those?
+
+Well if you accept a variable number of arguments, you could code all of that
+logic yourself in the method and make it _behave_ like it has a fancier method
+definition in Ruby. Thankfully, the API has a shortcut for doing exactly that.
+To use it, you should use the C array definition, then you can pass `argc` and
+`argv` along to:
+
+{% highlight c %}
+{% include scan.h %}
+{% endhighlight %}
+
+Here `fmt` is a format string describing how the method arguments would look in
+Ruby. The string has at most 6 characters where each character describes a
+different section of the arguments. The six sections and their corresponding
+characters are (in order):
+
+1. The number of leading mandatory arguments: a digit
+2. The number of optional arguments: a digit
+3. A splatted argument: `*`
+4. The number of trailing mandatory arguments: a digit
+5. An options hash: `:`
+6. A block argument: `&`
+
+Each section is optional, so you can just leave out the characters for things
+you don't need. Be aware that the parsing of the format string is greedy; for
+example `1*` describes a method with one mandatory argument and a splat. If you
+wanted one _optional_ argument and a splat you would need to specify `01*`.
+Following the format string, you must pass a `VALUE*` for each _Ruby_ argument.
+The number of pointers passed should equal the "total" of the six sections,
+though you can pass `0` for an argument you don't care about. For example
+the format string `21*&` should have 5 `VALUE*`s passed.
+
+`rb_scan_args()` unpacks `argv` using the `VALUE*`s you pass it and will
+raise a fitting exception if the wrong number of arguments were passed.
+
+{% highlight c %}
+{% include method2.snip %}
+{% endhighlight %}
+
+#### Definition ####
+
+Now that you've got your C function set up, it's a simple matter of creating the
+method in Ruby. Every API call takes (among other things) the method name
+(`char*`), a pointer to your C function, and an `argc` describing its arguments.
+`argc` should be:
+
+1. For a fixed number of arguments, the number of arguments
+2. For variable args in a C array, `-1`
+3. For variable args in a Ruby Array, `-2`
+
+Everything is pretty self-explanatory from there:
+
+{% highlight c %}
+{% include method3.snip %}
 {% endhighlight %}
 
 ## Footnotes ##
@@ -447,3 +510,4 @@ return a `VALUE`, but there are three ways you can define its arguments:
 	 find any documentation of when it would be cleared for you &ndash; it seems
 	 like you _always_ have to clear it.
 
+[^self]: Though how does this count the `self` argument?
