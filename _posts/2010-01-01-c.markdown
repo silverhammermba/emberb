@@ -63,7 +63,8 @@ doesn't take a `state` argument and instead raises any exceptions normally. See
 
 However, like using `eval` in Ruby, using this function is not a good practice.
 It's inefficient since it has to invoke the parser and it somewhat defeats the
-point of writing in C. Avoid using it whenever possible.
+point of writing in C. If you just want to call some Ruby method, we'll go over
+a better way to do that [later on](#send).
 
 ## VALUE ##
 
@@ -101,8 +102,7 @@ switch statement:
 {% include checktype.snip %}
 {% endhighlight %}
 
-And of course you can also call the Ruby method `.class` to get the `VALUE`
-pointing to the class object. We'll see how to do that [later](#send).
+If you instead want the `VALUE` of the class object, use the `CLASS_OF()` macro.
 
 ### Constants ###
 
@@ -220,6 +220,8 @@ Alternatively, you can use `rb_funcallv()` where the fourth argument is a
 You should prefer this approach should to `rb_eval_string()` and the like
 whenever possible. It's faster since it skips the parser and it allows for some
 compile-time checking.
+
+### Blocks ###
 
 ## Exceptions ##
 
@@ -493,6 +495,12 @@ You can also use the return value of `rb_scan_args()` to determine how the
 function was called. It returns the number of arguments that were passed in
 Ruby.
 
+If you want to use `super` in your method, pass arguments as a C array to
+
+{% highlight c %}
+{% include super.h %}
+{% endhighlight %}
+
 #### Definition ####
 
 Setting up the C function is the hard part, now it's easy to create the method
@@ -521,7 +529,7 @@ Math` to avoid typing `Math.` before every method call.
 
 ### Other Stuff ###
 
-Some more simple API functions for class/method stuff:
+Some simple API functions for class/method definitions:
 
 {% highlight c %}
 {% include etc.h %}
@@ -537,8 +545,8 @@ file, but I've HTML-ified it for nicer online reading. It has a bit more
 information than this guide, but in most cases that's because I intentionally
 omitted something that I either found not useful or better documented elsewhere.
 
-I think one of the handiest resources is the `ruby.h` header itself. The "full
-API" (i.e. everything you get by including `ruby.h`) easily consists of a
+I think one of the handiest resources is the `ruby.h` header itself. The full
+API (i.e. everything you get by including `ruby.h`) easily consists of a
 thousand functions, macros, constants, and globals &ndash; most of which have
 never been documented. However _most_ things are reasonably named and you should
 be able to figure out what they do from the header. You should be able to use
