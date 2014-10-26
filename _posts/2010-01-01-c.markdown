@@ -47,7 +47,7 @@ After you finish that, come back here to learn about the API.
 The simplest way to run some Ruby code from C is to `eval` it
 
 {% highlight c %}
-{% include eval.snip %}
+{% include eval.h %}
 {% endhighlight %}
 
 This is a good fallback if you can't find an API function for something that you
@@ -81,7 +81,7 @@ Probably the most frequent question you'll have is "what is the class of this
 macro.
 
 {% highlight c %}
-{% include type.snip %}
+{% include type.h %}
 {% endhighlight %}
 
 Given a `VALUE`, `TYPE()` returns one of the [`T_`
@@ -99,7 +99,7 @@ If you have a specific class in mind, there are faster checks than that big
 switch statement:
 
 {% highlight c %}
-{% include checktype.snip %}
+{% include checktype.h %}
 {% endhighlight %}
 
 If you instead want the `VALUE` of the class object, use the `CLASS_OF()` macro.
@@ -197,7 +197,7 @@ Now that you can make all of these Ruby objects, you'll probably want to start
 sending them methods. The easiest way to do that looks like this:
 
 {% highlight c %}
-{% include funcall.snip %}
+{% include funcall.h %}
 {% endhighlight %}
 
 This is roughly equivalent to the Ruby code
@@ -233,7 +233,7 @@ exceptions by now, so I should probably talk about them.
 To raise an exception, use:
 
 {% highlight c %}
-{% include raise.snip %}
+{% include raise.h %}
 {% endhighlight %}
 
 The first and second arguments are the exception class and message &ndash; like
@@ -247,7 +247,7 @@ the code you're protecting to be in a function that takes and returns a single
 `VALUE`.
 
 {% highlight c %}
-{% include danger.snip %}
+{% include danger.h %}
 {% endhighlight %}
 
 Unless you wanted to protect a function of exactly this type, you will probably
@@ -255,7 +255,7 @@ need to make a wrapper function in this format that makes the desired call. The
 way to access a rescued exception is also independent of the way it is rescued:
 
 {% highlight c %}
-{% include handle.snip %}
+{% include handle.h %}
 {% endhighlight %}
 
 `rb_errinfo()` essentially gives you the `VALUE` of Ruby's `$!` (which will be
@@ -275,7 +275,7 @@ want to rescue an exception in the API, you can use `rb_rescue2()` which is
 similar to Ruby's `rescue`.
 
 {% highlight c %}
-{% include rescue2.snip %}
+{% include rescue2.h %}
 {% endhighlight %}
 
 The first two arguments are the function to protect and its argument, the next
@@ -307,7 +307,7 @@ exception will segfault the VM and kill your program**. You could call
 all exceptions:
 
 {% highlight c %}
-{% include protect.snip %}
+{% include protect.h %}
 {% endhighlight %}
 
 Like `rb_rescue2()`, the first two arguments are for calling the function to
@@ -325,7 +325,7 @@ rescue; ensure; end` structure as in Ruby, you'll need another layer of
 wrapping:
 
 {% highlight c %}
-{% include ensure.snip %}
+{% include ensure.h %}
 {% endhighlight %}
 
 Like `ensure` in Ruby, the return value of `ensure_func()` is never used.  If no
@@ -360,14 +360,14 @@ method calls. For example, rather than `class Foo; def bar; end; end`, think `Fo
 The simplest way to deal with globals is:
 
 {% highlight c %}
-{% include global.snip %}
+{% include global.h %}
 {% endhighlight %}
 
 If you're frequently accessing Ruby's globals, you can set up a `VALUE` which
 will be automatically synchronized with one.
 
 {% highlight c %}
-{% include global2.snip %}
+{% include global2.h %}
 {% endhighlight %}
 
 The `VALUE` should be initialized before you create the global in Ruby and it
@@ -391,7 +391,7 @@ Getting/setting instance variables is similar to the simple way of accessing
 globals, but of course you need an object to get the variable from.
 
 {% highlight c %}
-{% include ivar.snip %}
+{% include ivar.h %}
 {% endhighlight %}
 
 There isn't an automatic way to synchronize instance variables like you can with
@@ -402,7 +402,7 @@ globals.
 You define constants similarly, but you specify the module to define them under:
 
 {% highlight c %}
-{% include constant.snip %}
+{% include constant.h %}
 {% endhighlight %}
 
 Getting a constant's `VALUE` is a little nuanced. The API function you call
@@ -410,7 +410,7 @@ depends on what you want Ruby to do if the constant is _not_ defined in the
 module you specify:
 
 {% highlight c %}
-{% include const_get.snip %}
+{% include const_get.h %}
 {% endhighlight %}
 
 All of these API calls will get private constants too.
@@ -420,13 +420,13 @@ All of these API calls will get private constants too.
 Defining modules is super easy.
 
 {% highlight c %}
-{% include module.snip %}
+{% include module.h %}
 {% endhighlight %}
 
 Classes work the same but you need to give them a superclass.
 
 {% highlight c %}
-{% include class.snip %}
+{% include class.h %}
 {% endhighlight %}
 
 Classes are assigned to constants, so you access them the same way as other
@@ -445,7 +445,7 @@ argument for the receiver of the method. There are three ways you can define its
 other arguments:
 
 {% highlight c %}
-{% include methodc.snip %}
+{% include methodc.h %}
 {% endhighlight %}
 
 So really the API only lets you define two types of methods: ones that take a
@@ -488,7 +488,7 @@ the format string `21*&` should have 5 `VALUE*`s passed.
 raise a fitting exception if the wrong number of arguments were passed.
 
 {% highlight c %}
-{% include methodex.snip %}
+{% include methodex.h %}
 {% endhighlight %}
 
 You can also use the return value of `rb_scan_args()` to determine how the
@@ -516,7 +516,7 @@ in Ruby. Every API call to create a method takes at least the method name
 Everything is pretty self-explanatory from there:
 
 {% highlight c %}
-{% include methodr.snip %}
+{% include methodr.h %}
 {% endhighlight %}
 
 There's also a shortcut for defining a method in a module _and_ its
@@ -524,7 +524,7 @@ singleton class. This is used a lot in `Math`, for example, letting you `include
 Math` to avoid typing `Math.` before every method call.
 
 {% highlight c %}
-{% include modulefunc.snip %}
+{% include modulefunc.h %}
 {% endhighlight %}
 
 ### Other Stuff ###
