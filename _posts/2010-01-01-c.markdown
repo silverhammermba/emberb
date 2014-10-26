@@ -493,6 +493,34 @@ Everything is pretty self-explanatory from there:
 
 ## Threading ##
 
+## See Also ##
+
+You might be interested in checking out [README.EXT](../readme), which is Ruby's
+"offical" API documentation. It's included in the Ruby source as a plain text
+file, but I've HTML-ified it for nicer online reading. It has a bit more
+information than this guide, but in most cases that's because I intentionally
+omitted something that I either found not useful or better documented elsewhere.
+
+I think one of the handiest resources is the `ruby.h` header itself. The "full
+API" (i.e. everything you get by including `ruby.h`) easily consists of a
+thousand functions, macros, constants, and globals &ndash; most of which have
+never been documented. However _most_ things are reasonably named and you should
+be able to figure out what they do from the header. You should be able to use
+your compiler to "expand" `ruby.h` to show everything that it pulls in. For gcc,
+I use
+
+    $ echo '#include <ruby.h>' | gcc -E -P -dD `pkg-config --cflags ruby-2.1` -xc -o ruby.h -
+
+If you find some function in the header that isn't documented anywhere, your
+next stop should be the Ruby source code.
+
+    $ git clone https://github.com/ruby/ruby.git
+
+When reading through the source code, always keep the header at hand: there are
+lots of really useful functions in there that _look_ like they should be in the
+API, but actually aren't. Though in most cases there should be an API function
+elsewhere that wraps the call to the useful function.
+
 ## Footnotes ##
 
 [^range]: I haven't checked.
