@@ -491,6 +491,8 @@ Everything is pretty self-explanatory from there:
 {% include method3.snip %}
 {% endhighlight %}
 
+## Threading ##
+
 ## Footnotes ##
 
 [^range]: I haven't checked.
