@@ -122,13 +122,12 @@ means of transferring data between C and Ruby.
 #### Fixnum ####
 
 Ruby's `Fixnum` corresponds to C's `long`. The `FIX2LONG()` macro gives you the
-`long` for a `Fixnum`. `FIX2INT()` will give you an `int` instead, but will
-raise a `RangeError` if the result wouldn't fit (there's also `FIX2UINT()` if
-that one bit makes all the difference).
+`long` for a `Fixnum`. For smaller C types there's `FIX2UINT()`, `FIX2INT()`,
+and `FIX2SHORT()`, but these will raise a `RangeError` if the number wouldn't
+fit.
 
-As you might expect, `LONG2FIX()` and `INT2FIX()` are for translating in the
-other direction. There's also `CHR2FIX()` for `char` (though `FIX2CHR()` is
-missing for some reason).
+In the other direction, `LONG2FIX()` works for `long` **and** every smaller
+integer C type[^chr].
 
 #### Bignum ####
 
@@ -188,8 +187,9 @@ macros `StringValuePtr()` and `RSTRING_LEN()` to get a (possibly unterminated)
 `char*` and the string's length as a `long`[^enc].
 
 Conversely, if you have a null-terminated `char*`, you can use
-`rb_str_new_cstr()` to create a Ruby `String`. `rb_str_new()` constructs a
-`String` from a `char*` and the string's length (as a `long`)[^utf].
+`rb_str_new_cstr()` to create a Ruby `String`. And if you want your `String` to
+containg nulls, use `rb_str_new()` which takes a `char*` and the string's length
+(as a `long`)[^utf].
 
 ## Send ##
 
@@ -269,8 +269,8 @@ like, but I think that generally the right choice is determined by your
 
 If you're compiling a library to be loaded by Ruby, you have it easy. Any
 exceptions raised in the API can be rescued as usual in your Ruby code. If you
-want to rescue an exception in the API, you can use `rb_rescue2()` which works
-very similar to Ruby's `rescue`.
+want to rescue an exception in the API, you can use `rb_rescue2()` which is
+similar to Ruby's `rescue`.
 
 {% highlight c %}
 {% include rescue2.snip %}
@@ -344,7 +344,7 @@ method name, etc. A general warning though: unlike Ruby, **the API lets you give
 things invalid names**. Ruby will rase a `SyntaxError` or `NameError` if you try
 to name a class `foo` (not constant) or an instance variable `bar` (with no
 `@`), but the API will happily create them.  The API handles this by **not
-exposing invalid names to Ruby**. Since that's generally not what you want,
+exposing invalid names to Ruby**. Since that's probably not what you want,
 double check the names you choose!
 
 ### Global Variables ###
@@ -522,6 +522,9 @@ API, but actually aren't. Though in most cases there should be an API function
 elsewhere that wraps the call to the useful function.
 
 ## Footnotes ##
+
+[^chr]: There is `CHR2FIX()`. But that just does some seemingly pointless
+        binary math before using `LONG2FIX()`.
 
 [^range]: I haven't checked.
 
