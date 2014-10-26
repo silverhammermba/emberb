@@ -240,6 +240,8 @@ compile-time checking.
 
 ### Blocks ###
 
+TODO
+
 ## Builtins ##
 
 Many of Ruby's built-in classes have API functions defined for their most useful
@@ -565,6 +567,8 @@ Some simple API functions for class/method definitions:
 {% endhighlight %}
 
 ## Threading ##
+
+TODO
 
 ## See Also ##
 
