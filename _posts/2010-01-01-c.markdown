@@ -234,8 +234,8 @@ Alternatively, you can use `rb_funcallv()` where the fourth argument is a
 `VALUE*` pointing to a C array of arguments. This also has the variant
 `rb_funcallv_public()` which is like `public_send` in Ruby.
 
-You should prefer this approach should to `rb_eval_string()` and the like
-whenever possible. It's faster since it skips the parser and it allows for some
+You should prefer this approach to `rb_eval_string()` and the like whenever
+possible. It's faster since it skips the parser and it allows for some
 compile-time checking.
 
 ### Blocks ###
