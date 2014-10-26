@@ -51,9 +51,9 @@ The simplest way to run some Ruby code from C is to `eval` it
 {% endhighlight %}
 
 This is a good fallback if you can't find an API function for something that you
-want to do. `rb_eval_string_protect()` returns the result of the Ruby code
-(all Ruby code returns something) and sets `state` to some nonzero value if any
-exception is raised. `VALUE` is the C data type for all Ruby objects, as
+want to do[^wrap]. `rb_eval_string_protect()` returns the result of the Ruby
+code (all Ruby code returns something) and sets `state` to some nonzero value if
+any exception is raised. `VALUE` is the C data type for all Ruby objects, as
 explained in the next section.
 
 If `state` is nonzero, `result` will be a `VALUE` representing `nil` and you
@@ -355,7 +355,7 @@ method calls. For example, rather than `class Foo; def bar; end; end`, think `Fo
 
 ### Global Variables ###
 
-Everyone hates globals, but as always they're the easiest to use.
+The simplest way to deal with globals is:
 
 {% highlight c %}
 {% include global.snip %}
@@ -374,6 +374,14 @@ Ruby is using it! For `rb_define_hooked_variable()`, you can pass `0` for the
 getter/setter if you want to synchronize normally for that operation. Or you can
 throw out `global` entirely with `rb_define_virtual_variable()` though of course
 the getter and setter _must_ be defined in that case.
+
+If you ever create a global `VALUE` in C which is _not_ exposed to Ruby (using
+one of the previous functions), you must tell the garbage collector about it to
+avoid it being prematurely cleaned up:
+
+{% highlight c %}
+{% include gc.h %}
+{% endhighlight %}
 
 ### Instance Variables ###
 
@@ -435,7 +443,7 @@ argument for the receiver of the method. There are three ways you can define its
 other arguments:
 
 {% highlight c %}
-{% include method.snip %}
+{% include methodc.snip %}
 {% endhighlight %}
 
 So really the API only lets you define two types of methods: ones that take a
@@ -478,8 +486,12 @@ the format string `21*&` should have 5 `VALUE*`s passed.
 raise a fitting exception if the wrong number of arguments were passed.
 
 {% highlight c %}
-{% include method2.snip %}
+{% include methodex.snip %}
 {% endhighlight %}
+
+You can also use the return value of `rb_scan_args()` to determine how the
+function was called. It returns the number of arguments that were passed in
+Ruby.
 
 #### Definition ####
 
@@ -496,7 +508,7 @@ in Ruby. Every API call to create a method takes at least the method name
 Everything is pretty self-explanatory from there:
 
 {% highlight c %}
-{% include method3.snip %}
+{% include methodr.snip %}
 {% endhighlight %}
 
 There's also a shortcut for defining a method in a module _and_ its
@@ -507,12 +519,20 @@ Math` to avoid typing `Math.` before every method call.
 {% include modulefunc.snip %}
 {% endhighlight %}
 
+### Other Stuff ###
+
+Some more simple API functions for class/method stuff:
+
+{% highlight c %}
+{% include etc.h %}
+{% endhighlight %}
+
 ## Threading ##
 
 ## See Also ##
 
 You might be interested in checking out [README.EXT](../readme), which is Ruby's
-"official" API documentation. It's included in the Ruby source as a plain text
+official API documentation. It's included in the Ruby source as a plain text
 file, but I've HTML-ified it for nicer online reading. It has a bit more
 information than this guide, but in most cases that's because I intentionally
 omitted something that I either found not useful or better documented elsewhere.
@@ -538,6 +558,9 @@ API, but actually aren't. Though in most cases there should be an API function
 elsewhere that wraps the call to the useful function.
 
 ## Footnotes ##
+
+[^wrap]: There's also `rb_eval_string_wrap()` but I'm not entirely sure what the
+         use-case is for it.
 
 [^chr]: There is `CHR2FIX()`. But that just does some seemingly pointless
         binary math before using `LONG2FIX()`.
