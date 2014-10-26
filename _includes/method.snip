@@ -1,4 +1,4 @@
-/* normal hardcoded arg list (can have up to 16 args) */
+/* normal mandatory args (can have up to 16 args not counting self) */
 VALUE my_method(VALUE self, VALUE arg1, VALUE arg2)
 {
 	/* ... */
@@ -15,4 +15,3 @@ VALUE my_method(int argc, VALUE* argv, VALUE self)
 {
 	/* ... */
 }
-

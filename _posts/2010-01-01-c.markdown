@@ -188,7 +188,7 @@ macros `StringValuePtr()` and `RSTRING_LEN()` to get a (possibly unterminated)
 
 Conversely, if you have a null-terminated `char*`, you can use
 `rb_str_new_cstr()` to create a Ruby `String`. And if you want your `String` to
-containg nulls, use `rb_str_new()` which takes a `char*` and the string's length
+contain nulls, use `rb_str_new()` which takes a `char*` and the string's length
 (as a `long`)[^utf].
 
 ## Send ##
@@ -217,9 +217,9 @@ Alternatively, you can use `rb_funcallv()` where the fourth argument is a
 `VALUE*` pointing to a C array of arguments. This also has the variant
 `rb_funcallv_public()` which is like `public_send` in Ruby.
 
-Whenever possible, this approach should be used instead of the
-[quick'n'dirty](#quick-n-dirty) `rb_eval_string()`. It's faster
-since it skips the parser and it allows for some compile-time checking.
+You should prefer this approach should to `rb_eval_string()` and the like
+whenever possible. It's faster since it skips the parser and it allows for some
+compile-time checking.
 
 ## Exceptions ##
 
@@ -257,7 +257,7 @@ way to access a rescued exception is also independent of the way it is rescued:
 {% endhighlight %}
 
 `rb_errinfo()` essentially gives you the `VALUE` of Ruby's `$!` (which will be
-`Qnil` if no exception occured). Unlike in Ruby, the API does not automatically
+`Qnil` if no exception occurred). Unlike in Ruby, the API does not automatically
 clear `$!` after a rescue so you need to clear it manually[^clear]. Otherwise
 later API calls might read the old value and think an exception has occurred.
 
@@ -310,9 +310,9 @@ all exceptions:
 
 Like `rb_rescue2()`, the first two arguments are for calling the function to
 protect. However, like `rb_eval_string_protect()`, if an exception is raised
-it returns `Qnil` and sets `state` to some nonzero value. If you want to reraise
-the exception, pass `state` to `rb_jump_tag()` (this works for
-`rb_eval_string_protect()` too).
+it returns `Qnil` and sets `state` to some nonzero value. If you want to
+re-raise the exception, pass `state` to `rb_jump_tag()` (this works for the
+state from `rb_eval_string_protect()` too).
 
 ### Ensure ###
 
@@ -341,11 +341,17 @@ API &ndash; there's no variable in Ruby for it.
 There are a few ways to make things visible to Ruby but they all work the same
 general way: by defining some name that Ruby can access e.g. variable name,
 method name, etc. A general warning though: unlike Ruby, **the API lets you give
-things invalid names**. Ruby will rase a `SyntaxError` or `NameError` if you try
-to name a class `foo` (not constant) or an instance variable `bar` (with no
-`@`), but the API will happily create them.  The API handles this by **not
-exposing invalid names to Ruby**. Since that's probably not what you want,
-double check the names you choose!
+things invalid names**. Ruby will raise a `SyntaxError` or `NameError` if you
+try to name a class `foo` (not constant) or an instance variable `bar` (no `@`),
+but the API will happily create them.  The API handles this by **not exposing
+invalid names to Ruby**. Since that's probably not what you want, double check
+the names you choose!
+
+Most of the API functions in this section correspond closely to metaprogramming
+methods in Ruby. When you're trying to do something using the API, it can be
+helpful to think about how you would do it in Ruby using only metaprogramming
+method calls. For example, rather than `class Foo; def bar; end; end`, think `Foo
+= Class.new; Foo.define_method(:bar) {}`.
 
 ### Global Variables ###
 
@@ -364,12 +370,10 @@ will be automatically synchronized with one.
 
 The `VALUE` should be initialized before you create the global in Ruby and it
 should be global in C as well &ndash; you don't want it to go out of scope while
-Ruby is using it! For `rb_define_readonly_variable()` the object is not frozen,
-so it can still be modified from Ruby if it is mutable. For
-`rb_define_hooked_variable()`, you can pass `0` for the getter/setter if you
-want to synchronize normally for that operation. Or you can throw out `global`
-entirely with `rb_define_virtual_variable()` though of course the getter and
-setter _must_ be defined in that case.
+Ruby is using it! For `rb_define_hooked_variable()`, you can pass `0` for the
+getter/setter if you want to synchronize normally for that operation. Or you can
+throw out `global` entirely with `rb_define_virtual_variable()` though of course
+the getter and setter _must_ be defined in that case.
 
 ### Instance Variables ###
 
@@ -399,6 +403,8 @@ module you specify:
 {% include const_get.snip %}
 {% endhighlight %}
 
+All of these API calls will get private constants too.
+
 ### Modules and Classes ###
 
 Defining modules is super easy.
@@ -416,7 +422,7 @@ Classes work the same but you need to give them a superclass.
 Classes are assigned to constants, so you access them the same way as other
 constants. I'll also mention briefly that there's `rb_cv_get/set()` for class
 variables. They work just like the API functions for instance variables but the
-first argument must be a class. Surprising.
+first argument must be a class.
 
 ### Methods ###
 
@@ -424,20 +430,21 @@ first argument must be a class. Surprising.
 
 Here's where it gets interesting again. There are many kinds of API calls for
 defining methods, but before you use any of them you'll need a C function which
-the method will call. The function must return a `VALUE`, and there are three
-ways you can define its arguments:
+the method will call. The function must return a `VALUE` and have one `VALUE`
+argument for the receiver of the method. There are three ways you can define its
+other arguments:
 
 {% highlight c %}
 {% include method.snip %}
 {% endhighlight %}
 
 So really the API only lets you define two types of methods: ones that take a
-fixed number of arguments[^self], and ones that slurp up all their arguments.
-What about all of Ruby's fancy argument features? Where are optional args,
-keyword args, options hashes, blocks, and all the mixtures of those?
+fixed number of arguments, and ones that slurp up all their arguments.  What
+about all of Ruby's fancy argument features? Where are optional arguments,
+keyword arguments, options hashes, blocks, and all the mixtures of those?
 
-Well if you accept a variable number of arguments, you could code all of that
-logic yourself in the method and make it _behave_ like it has a fancier method
+Well, if you accept a variable number of arguments you could code all of that
+logic yourself in the method, and make it _behave_ like it has a fancier method
 definition in Ruby. Thankfully, the API has a shortcut for doing exactly that.
 To use it, you should use the C array definition, then you can pass `argc` and
 `argv` along to:
@@ -476,14 +483,15 @@ raise a fitting exception if the wrong number of arguments were passed.
 
 #### Definition ####
 
-Now that you've got your C function set up, it's a simple matter of creating the
-method in Ruby. Every API call takes (among other things) the method name
+Setting up the C function is the hard part, now it's easy to create the method
+in Ruby. Every API call to create a method takes at least the method name
 (`char*`), a pointer to your C function, and an `argc` describing its arguments.
 `argc` should be:
 
-1. For a fixed number of arguments, the number of arguments
-2. For variable args in a C array, `-1`
-3. For variable args in a Ruby Array, `-2`
+1. For a fixed number of arguments, the number of arguments (not counting the
+   receiver)
+2. For a variable number of arguments in a C array, `-1`
+3. For a variable number of arguments in a Ruby Array, `-2`
 
 Everything is pretty self-explanatory from there:
 
@@ -491,12 +499,20 @@ Everything is pretty self-explanatory from there:
 {% include method3.snip %}
 {% endhighlight %}
 
+There's also a shortcut for defining a method in a module _and_ its
+singleton class. This is used a lot in `Math`, for example, letting you `include
+Math` to avoid typing `Math.` before every method call.
+
+{% highlight c %}
+{% include modulefunc.snip %}
+{% endhighlight %}
+
 ## Threading ##
 
 ## See Also ##
 
 You might be interested in checking out [README.EXT](../readme), which is Ruby's
-"offical" API documentation. It's included in the Ruby source as a plain text
+"official" API documentation. It's included in the Ruby source as a plain text
 file, but I've HTML-ified it for nicer online reading. It has a bit more
 information than this guide, but in most cases that's because I intentionally
 omitted something that I either found not useful or better documented elsewhere.
@@ -530,17 +546,15 @@ elsewhere that wraps the call to the useful function.
 
 [^enc]: I'm not sure how to deal with different encodings (especially wide ones).
 
-[^utf]: Again, the documention [mentions](../readme#string-functions) that there
-	  are ways to create UTF-8 strings (`rb_utf8_str_new`), but I couldn't get
-	  them to work.
+[^utf]: Again, the documentation [mentions](../readme#string-functions) that
+        there are ways to create UTF-8 strings (`rb_utf8_str_new`), but I
+        couldn't get them to work.
 
 [^pi]: The documentation [claims](../readme#exceptions-and-errors) to support the
-	  additional format directives `%i` and `%+i` for `to_s` and `inspect` (both
-	  take a `VALUE`) but these printed garbage in my tests.
+       additional format directives `%i` and `%+i` for `to_s` and `inspect` (both
+       take a `VALUE`) but these printed garbage in my tests.
 
 [^clear]: The documentation [states](../readme#control-structure) that "You have to
-	 clear the error info [when] ignoring the caught exception". But I can't
-	 find any documentation of when it would be cleared for you &ndash; it seems
-	 like you _always_ have to clear it.
-
-[^self]: Though how does this count the `self` argument?
+          clear the error info [when] ignoring the caught exception". But I can't
+          find any documentation of when it would be cleared for you &ndash; it seems
+          like you _always_ have to clear it.
