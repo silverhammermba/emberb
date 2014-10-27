@@ -20,26 +20,26 @@ options for your distribution:
 ## Startup, Teardown ##
 
 Including the Ruby interpreter in your C/C++ program is pretty simple. Just
-include the header and bookend your API calls with some function calls.
+include the header and bookend your API calls with a couple function calls.
 
 {% highlight c linenos %}
 {% include simple.c %}
 {% endhighlight %}
 
-`ruby_init()` constructs the VM. However, if the VM fails to start it will print
-an error and exit your program! If you would rather have a softer error, you can
-instead call `ruby_setup()` which returns a nonzero value if a failure occurred
+If the VM fails to start during `ruby_init()` it will print an error and exit
+your program! If you would rather have a softer error, you can instead call
+`ruby_setup()` which returns a nonzero value if a failure occurred
 (unfortunately it is not clear how to get a message for the error[^err]).
 
-`ruby_cleanup(0)` destructs the VM. If an error occurs during cleanup it returns
-a nonzero value &ndash; otherwise it returns the argument you passed it. This
-allows a little shortcut for returning an error status if the cleanup fails (as
-demonstrated in the previous example).
+If an error occurs during `rb_cleanup()`, it returns a nonzero value &ndash;
+otherwise it returns the argument you passed it. This allows a little shortcut
+for returning an error status if the cleanup fails (as demonstrated in the
+previous example).
 
 During cleanup, the VM might evaluate more Ruby code (if you passed a block to
-`at_exit`, for example) which could raise an exception. `ruby_cleanup` handles
-these by just returning a nonzero value, but if you instead call
-`ruby_finalize()` they will be raised normally (see the section on
+`at_exit`, for example) which could raise an exception. `ruby_cleanup()` handles
+these by returning a nonzero value and printing an error message. If you instead
+call `ruby_finalize()` they will be raised normally (see the section on
 [Exceptions](../c#rescue) for how to handle them).
 
 Here's an alternative example:

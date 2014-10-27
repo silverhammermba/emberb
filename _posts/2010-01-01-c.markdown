@@ -8,13 +8,12 @@ title: The Ruby C API
 For the greatest chance of success with this guide, I recommend being fairly
 comfortable with C and _very_ comfortable with Ruby.
 
-To be honest, you don't "need" to know any advanced C concepts in order to use
-the API; most of the complexity is hidden behind functions and macros. However
-the API is **huge** and largely **undocumented**. After you start using it, you
-will inevitably find yourself delving through the Ruby source code at some point
-to figure out the behavior of some obscure function or macro. The Ruby
-source uses some fairly sophisticated C, so you'll need to at least be able to
-read it.
+You don't "need" to know any advanced C concepts in order to use the API; most
+of the complexity is hidden behind functions and macros. However the API is
+**huge** and largely **undocumented**. After you start using it, you will
+inevitably find yourself delving through the Ruby source code at some point to
+figure out the behavior of some obscure function or macro. The Ruby source uses
+some fairly sophisticated C, so you'll need to at least be able to read it.
 
 In the next section I'll say "everything you can do in Ruby, you can also do
 using [the] C API". This is true, but it really should be followed with "...but

@@ -79,8 +79,9 @@ But of course that won't do anything without some C code to compile.
 ## Init ##
 
 Your C code can be structured however you want. The only requirement is that you
-must include a function for the Ruby VM to call when your library is `require`d.
-The name of the function is determined by the argument you passed to
+must define a function for the Ruby VM to call when your library is `require`d.
+You probably want to `#include <ruby.h>` too, but that technically isn't
+required. The name of the function is determined by the argument you passed to
 `create_makefile` in `extconf.rb`. We used "foobar" in our example, so we'll
 create `foobar.c` containing
 
@@ -130,4 +131,4 @@ subdirectories of `ext/` and pass all of the `extconf.rb`s to the spec.
 	  command line flags e.g.  `--vendor`. But I also can't find this documented
 	  anywhere.
 
-[^rbg]: http://guides.rubygems.org/gems-with-extensions/
+[^rbg]: [http://guides.rubygems.org/gems-with-extensions/](http://guides.rubygems.org/gems-with-extensions/)
