@@ -1,33 +1,45 @@
 #include <ruby.h>
-#include <stdio.h>
+#include <ruby/thread.h>
+#include <unistd.h>
 
-VALUE Foofoo(VALUE self, VALUE x)
+void* concurrent_func(void* arg)
 {
-	rb_eval_string_protect("puts 'Foo foo'", NULL);
-	rb_funcall(rb_mKernel, rb_intern("p"), 1, x);
-	return Qnil;
+	unsigned int* x = arg;
+
+	for (unsigned int i = 0; i < *x; ++i)
+		sleep(1);
+
+	*x *= 2;
+
+	return NULL;
 }
 
-VALUE Barfoo(VALUE self, VALUE x)
+void unblock_func(void* arg)
 {
-	rb_eval_string_protect("puts 'Bar foo'", NULL);
-	rb_funcall(rb_mKernel, rb_intern("p"), 1, x);
-	rb_call_super(1, &x);
-	return Qnil;
+	unsigned int* x = arg;
+	*x = 0;
+}
+
+VALUE foo(VALUE self, VALUE x)
+{
+	Check_Type(x, T_FIXNUM);
+
+	unsigned int y = NUM2UINT(x);
+
+	//concurrent_func((void*)&y);
+	rb_thread_call_without_gvl2(concurrent_func, (void*)&y, NULL, NULL);
+
+	return LONG2FIX(y);
 }
 
 int main(int argc, char* argv[])
 {
 	ruby_init();
 
-	VALUE cFoo = rb_define_class("Foo", rb_cObject);
-	rb_define_method(cFoo, "foo", Foofoo, 1);
+	rb_define_global_function("foo", foo, 1);
 
-	VALUE cBar = rb_define_class("Bar", cFoo);
-	rb_define_method(cBar, "foo", Barfoo, 1);
+	int state;
+	rb_eval_string_protect("threads = Array.new(3) { Thread.new { foo 10 } }; p threads.map(&:join)", &state);
 
-	VALUE bar = rb_funcall(cBar, rb_intern("new"), 0);
-	rb_funcall(bar, rb_intern("foo"), 1, INT2FIX(42));
-
-	return ruby_cleanup(0);
+	return ruby_cleanup(state);
 }

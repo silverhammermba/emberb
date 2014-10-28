@@ -617,7 +617,71 @@ Some simple API functions for class/method definitions:
 
 ## Threading ##
 
-TODO
+### Ruby in C Threads ###
+
+If you're making a lot of API calls and running a lot of Ruby code from C, at
+some point you might catch yourself thinking, "I'm running all of these slow
+Ruby methods using the API. Maybe I can thread things to keep my code fast!"
+That's a reasonable thought, but when you act on it keep in mind that **the Ruby
+VM is not at all thread safe**. Ideally, all of your API code should run in a
+single thread. If not, you'll probably need to wrap every API call with a locked
+mutex to make sure that you never ever have multiple threads interacting with
+the API at the same time.
+
+If you just want to create normal Ruby `Thread`s using the API (and don't mind
+the GVL, as described in the next section), there's an easy way to do that:
+
+{% highlight c %}
+{% include thread.h %}
+{% endhighlight %}
+
+### C in Ruby Threads ###
+
+On the other hand, if you expose some heavy C code to Ruby with the API (if
+you're writing an extension that wraps a C library, for example), you should
+spend some time thinking about a nasty thing called the global VM lock (GVL).
+Because most of the API is not `Thread` safe, the GVL locks down almost all Ruby
+code so that only a single `Thread` can run at a time. This is the reason why
+you'll often hear people say that `Thread` is not truly concurrent.
+
+The VM automatically applies the GVL to any C code you expose to Ruby. That's
+why you can use the API without worrying about it exploding when someone calls
+your C code from inside a `Thread`. The downside of this is that if your C code
+takes a while to run, you won't see any performance benefit from calling it in
+a `Thread` because **it will block all other threads** while it runs.
+Thankfully, you can tell the VM to release the GVL before running some C code
+and to reacquire it when it completes, allowing for true concurrency. Locking
+and unlocking the GVL does carry a performance hit, so only resort to this if
+you notice that you're having significant problems due to blocked threads.
+
+The code to do this is considered so fancy by the Ruby developers that you
+actually need to include another header to use it. First we'll look at the
+slightly simpler way to release the GVL:
+
+{% highlight c %}
+{% include gvl2.h %}
+{% endhighlight %}
+
+Since the function that is run without the GVL gets and returns data using
+`void*`, you may want to define a `struct` for passing data via pointers. Also,
+the last two arguments don't _have_ to be `NULL` but they're ignored, so why
+not?
+
+The downside of the previous approach is that `slow_func` can't be
+interrupted[^int]. To allow for that you use a slightly different API function:
+
+{% highlight c %}
+{% include gvl.h %}
+{% endhighlight %}
+
+To make the unblocking function work, you'll probably need to have both
+functions share a pointer to some variable that indicates an interrupt. The
+interrupted function should perform any necessary cleanup before returning.
+
+Alternatively, if the interrupted function doesn't _need_ to perform any special
+cleanup, you can use the built in unblocking function `RUBY_UBF_IO`[^ubf] (which
+ignores the unblocking argument). That simply forwards the interrupt to the
+running thread.
 
 ## See Also ##
 
@@ -682,3 +746,11 @@ elsewhere that wraps the call to the useful function.
           `rb_iter_break()` and `rb_iter_break_value()` for breaking out of a
           block, but can't you just return early? I can't think of a use-case
           for these.
+
+[^int]: The documentation in `thread.c` says "If `rb_thread_call_without_gvl2()`
+        detects interrupt, it returns immediately." but this wasn't the case in
+		my tests. It would wait until it returns normally and _then_ raise the
+		interrupt.
+
+[^ubf]: You can also use `RUBY_UBF_PROCESS`, but this seems to be a leftover
+        from deprecated code and has the exact same effect.
