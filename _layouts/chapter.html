@@ -2,8 +2,64 @@
 layout: default
 ---
 
-<article>
-	<div class="page-header"><h1>{{ page.title }}</h1></div>
+<div class="container-fluid">
+	<div class="row">
 
-	{{ content }}
-</article>
+		<div id="sidebar-wrapper" class="col-md-2">
+		</div>
+
+		<div id="main" class="col-md-8">
+			<div class="page-header"><h1>{{ page.title }}</h1></div>
+
+			{{ content }}
+		</div>
+	</div>
+</div>
+
+		<script>
+$(document).ready(function() {
+	// get all headers after the first one
+	var headers = $('#main :header').slice(1);
+
+	function hlvl(x) {
+		return x.tagName[1] * 1;
+	}
+
+	if (headers.length > 0) {
+		var index = 0;
+
+		// build toc starting at header level
+		function build_toc() {
+			var ol = $('<ol></ol>');
+
+			var level = hlvl(headers[index]);
+
+			while(true) {
+				// if we've reached the end or the header is too high level we're done
+				if (index >= headers.length || hlvl(headers[index]) < level)
+				{
+					return ol;
+				}
+
+				// create li
+				var li = $('<li><a href="#' + headers[index].id + '">' + $(headers[index]).text() + '</a></li>');
+
+				++index;
+
+				// if the next header is a level lower, recurse and add it to the li
+				if (index < headers.length && hlvl(headers[index]) > level)
+					li.append(build_toc());
+
+				// add to the list
+				ol.append(li);
+			}
+		}
+
+		var toc = build_toc();
+
+		toc[0].id = "toc";
+
+		$('#sidebar-wrapper').append(toc);
+	}
+});
+		</script>
