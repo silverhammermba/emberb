@@ -35,8 +35,15 @@
 			</div>
 		</nav>
 
-		<section id="main" class="container">
-			{{ content }}
+		<section id="main" class="container-fluid">
+			<div class="row">
+				<div id="sidebar-wrapper" class="col-sm-2">
+				</div>
+
+				<div class="col-sm-10">
+					{{ content }}
+				</div>
+			</div>
 		</section>
 
 		<footer>
@@ -50,5 +57,50 @@
 
 		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 		<script src="//netdna.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+		<script>
+var headers = $('#main :header').slice(1);
+
+function hlvl(x) {
+	return x.tagName[1] * 1;
+}
+
+if (headers.length > 0) {
+	var index = 0;
+
+	// build toc starting at header level
+	function build_toc() {
+		var ol = $('<ol></ol>');
+
+		var level = hlvl(headers[index]);
+
+		while(true) {
+			// if we've reached the end or the header is too high level we're done
+			if (index >= headers.length || hlvl(headers[index]) < level)
+			{
+				return ol;
+			}
+
+			// create li
+			var li = $('<li><a href="#' + headers[index].id + '">' + $(headers[index]).text() + '</a></li>');
+
+			++index;
+
+			// if the next header is a level lower, recurse and add it to the li
+			if (index < headers.length && hlvl(headers[index]) > level)
+				li.append(build_toc());
+
+			// add to the list
+			ol.append(li);
+		}
+	}
+
+	var toc = build_toc();
+
+	toc[0].id = "sidebar";
+	toc.addClass('nav');
+
+	$('#sidebar-wrapper').append(toc);
+}
+		</script>
 	</body>
 </html>
