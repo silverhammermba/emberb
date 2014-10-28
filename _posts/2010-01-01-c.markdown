@@ -261,6 +261,9 @@ also recommend against using the first argument to your block function unless
 you're **sure** that only one value was yielded. You can always get all the
 arguments from `argv`, so why not play it safe?
 
+You can call `rb_iter_break(void)` or `rb_iter_break_value(VALUE)` to break out
+of a block.
+
 ## Builtins ##
 
 Many of Ruby's built-in classes have API functions defined for their most useful
