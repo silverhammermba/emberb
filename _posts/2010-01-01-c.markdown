@@ -41,9 +41,9 @@ you want to embed the Ruby interpreter in C, read [Running Ruby in C](../embed).
 you want to `require` a compiled C library, read [Running C in Ruby](../extend).
 After you finish that, come back here to learn about the API.
 
-## Quick 'n' Dirty ##
+## Eval ##
 
-The simplest way to run some Ruby code from C is to `eval` it
+The quick 'n' dirty way to run some Ruby code from C is to `eval` it
 
 {% highlight c %}
 {% include eval.h %}
