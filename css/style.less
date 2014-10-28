@@ -28,3 +28,19 @@ p img {
 .highlight .lineno {
 	color: #AB8B25;
 }
+
+#sidebar-wrapper {
+	overflow: hidden;
+}
+
+/* nice nested list counters */
+#sidebar-wrapper ol {
+	counter-reset: item
+}
+#sidebar-wrapper li {
+	display: block
+}
+#sidebar-wrapper li:before {
+	content: counters(item, ".") " ";
+	counter-increment: item
+}
