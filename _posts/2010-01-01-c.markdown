@@ -205,9 +205,9 @@ take a `char*` and which do the `rb_intern()` call for you. Since these
 functions are often more readable and the overhead of the `rb_intern()` call is
 negligible, I have opted to use the `char*` versions of the API functions
 wherever possible in this guide. If you find yourself frequently using a certain
-C string API calls, you may see some performance benefit by storing the `ID` and
-using the `ID` versions of the functions (though you'll have to look these up
-yourself in the Ruby headers).
+C string in API calls, you may see some performance benefit by storing the `ID`
+and using the `ID` versions of the functions (though you'll have to look these
+up yourself in the Ruby headers).
 
 ## Send ##
 
@@ -216,8 +216,7 @@ should prefer these functions to `rb_eval_string()` and the like whenever
 possible. They are faster since they skip the parser and allow for some
 compile-time checking.
 
-Now that you can make all of these Ruby objects, you'll probably want to start
-sending them methods. The easiest way to do that looks like this:
+The easiest way to send an object a method looks like this:
 
 {% highlight c %}
 {% include funcall.h %}
@@ -248,7 +247,7 @@ is just like `rb_funcallv()` but with the proc on the end.
 {% endhighlight %}
 
 If you don't have a proc for the block, you'll need to define a certain kind of
-C function to represent the block. Then there's a different variant of
+C function to represent the block[^break]. Then there's a different variant of
 `rb_funcallv()` but with a couple extra arguments for the block:
 
 {% highlight c %}
@@ -260,9 +259,6 @@ the block function's scope, but in this example we don't need it (thus `nil`). I
 also recommend against using the first argument to your block function unless
 you're **sure** that only one value was yielded. You can always get all the
 arguments from `argv`, so why not play it safe?
-
-You can call `rb_iter_break(void)` or `rb_iter_break_value(VALUE)` to break out
-of a block.
 
 ## Builtins ##
 
@@ -394,7 +390,7 @@ example, a `String` made with `rb_str_new_cstr()` is only accessible within the
 API &ndash; there's no variable in Ruby for it.
 
 There are a few ways to make things visible to Ruby but they all work the same
-general way: by defining some name that Ruby can access e.g. variable name,
+general way: by defining some name that Ruby can access e.g. a variable name, a
 method name, etc. A general warning though: unlike Ruby, **the API lets you give
 things invalid names**. Ruby will raise a `SyntaxError` or `NameError` if you
 try to name a class `foo` (not constant) or an instance variable `bar` (no `@`),
@@ -432,13 +428,13 @@ the getter and setter _must_ be defined in that case.
 
 If you ever create a global `VALUE` in C which is _not_ exposed to Ruby (using
 one of the previous functions), you must tell the garbage collector about it to
-avoid it being prematurely cleaned up:
+prevent it from being prematurely cleaned up:
 
 {% highlight c %}
 {% include gc.h %}
 {% endhighlight %}
 
-### Instance Variables ###
+### Class and Instance Variables ###
 
 Getting/setting instance variables is similar to the simple way of accessing
 globals, but of course you need an object to get the variable from.
@@ -450,16 +446,19 @@ globals, but of course you need an object to get the variable from.
 There isn't an automatic way to synchronize instance variables like you can with
 globals.
 
+For class variables, the methods are `rb_cv_get()` and `rb_cv_set()` and of
+course the first argument should be a class object.
+
 ### Constants ####
 
-You define constants similarly, but you specify the module to define them under:
+You define constants similarly, but with the module to define them under:
 
 {% highlight c %}
 {% include constant.h %}
 {% endhighlight %}
 
 Getting a constant's `VALUE` is a little nuanced. The API function you call
-depends on what you want Ruby to do if the constant is _not_ defined in the
+depends on what you want to happen if the constant is _not_ defined in the
 module you specify:
 
 {% highlight c %}
@@ -482,11 +481,6 @@ Classes work the same but you need to give them a superclass.
 {% include class.h %}
 {% endhighlight %}
 
-Classes are assigned to constants, so you access them the same way as other
-constants. I'll also mention briefly that there's `rb_cv_get/set()` for class
-variables. They work just like the API functions for instance variables but the
-first argument must be a class.
-
 ### Methods ###
 
 Here's where it gets interesting again. There are many kinds of API calls for
@@ -502,22 +496,22 @@ other arguments:
 So really the API only lets you define two types of methods: ones that take a
 fixed number of arguments, and ones that slurp up all their arguments.  What
 about all of Ruby's fancy argument features? Where are optional arguments,
-keyword arguments, options hashes, blocks, and all the mixtures of those?
+options hashes, blocks, and all the mixtures of those?
 
 #### Parsing Arguments ####
 
 Well, if you accept a variable number of arguments you could code all of that
 logic yourself in the method, and make it _behave_ like it has a fancier method
 definition in Ruby. Thankfully, the API has a shortcut for doing exactly that.
-To use it, you should use the C array definition, then you can pass `argc` and
-`argv` along to:
+To use it, you should use the C array function definition, then you can pass
+`argc` and `argv` along to:
 
 {% highlight c %}
 {% include scan.h %}
 {% endhighlight %}
 
 Here `fmt` is a format string describing how the method arguments would look in
-Ruby. The string has at most 6 characters where each character describes a
+Ruby. The string can have at most 6 characters, where each character describes a
 different section of the arguments. The six sections and their corresponding
 characters are (in order):
 
@@ -529,13 +523,14 @@ characters are (in order):
 6. A block argument: `&`
 
 Each section is optional, so you can just leave out the characters for things
-you don't need. Be aware that the parsing of the format string is greedy; for
-example `1*` describes a method with one mandatory argument and a splat. If you
-wanted one _optional_ argument and a splat you would need to specify `01*`.
-Following the format string, you must pass a `VALUE*` for each _Ruby_ argument.
-The number of pointers passed should equal the "total" of the six sections,
-though you can pass `0` for an argument you don't care about. For example
-the format string `21*&` should have 5 `VALUE*`s passed.
+you don't need. Be aware that the parsing of the format string is greedy: `1*`
+describes a method with one mandatory argument and a splat. If you want one
+_optional_ argument and a splat you must specify `01*`.  Following the format
+string, you must pass a `VALUE*` for each _Ruby_ argument.  The number of
+pointers passed should equal the "total" of the six sections, though you can
+pass `0` for an argument you don't care about. For example the format string
+`21*&` should have 5 `VALUE*`s passed (2 mandatory, 1 optional, 1 splatted, 1
+block).
 
 `rb_scan_args()` unpacks `argv` using the `VALUE*`s you pass it and will
 raise a fitting exception if the wrong number of arguments were passed.
@@ -559,19 +554,19 @@ There are two ways to check if your C method has been called with a block:
 There are two ways to capture the block as a proc. If you're using
 `rb_scan_args()` for your method arguments, just include `&` in your format
 string to get it. If you aren't using `rb_scan_args()`, there's an API call
-equivalent to `Proc.new` which converts the method block to a proc:
+equivalent to `Proc.new` which converts the method's block to a proc:
 
     VALUE block;
-	block = rb_block_proc();
+    block = rb_block_proc();
 
-There are a few ways to yield to a block:
+If you don't want to capture the block, there are a few ways to yield to it:
 
 {% highlight c %}
 {% include yield.h %}
 {% endhighlight %}
 
-There's also `rb_yield_values2()` which is like `rb_yield_values()` but the
-second argument is a `VALUE*` rather than being a varargs[^yield].
+There's also `rb_yield_values2()` which is like `rb_yield_values()` but instead
+of varargs the second argument is a `VALUE*`[^yield].
 
 #### Super ####
 
@@ -588,7 +583,7 @@ style of method definition if you want to use `rb_call_super()`.
 
 #### Definition ####
 
-Setting up the C function is the hard part, now it's easy to create the method
+Setting up the C function is the hard part, now it's easy to define the method
 in Ruby. Every API call to create a method takes at least the method name
 (`char*`), a pointer to your C function, and an `argc` describing its arguments.
 `argc` should be:
@@ -655,7 +650,7 @@ elsewhere that wraps the call to the useful function.
 ## Footnotes ##
 
 [^undef]: There's also `Qundef` representing an undefined value, but
-		  this has no Ruby equivalent and is [rarely](#handling-blocks) used.
+          this has no Ruby equivalent and is [rarely](#handling-blocks) used.
 
 [^wrap]: There's also `rb_eval_string_wrap()` but I'm not entirely sure what the
          use-case is for it.
@@ -682,3 +677,8 @@ elsewhere that wraps the call to the useful function.
 
 [^yield]: And there's `rb_yield_block()` which takes two unused arguments and is
           never called by anything in Ruby. Odd.
+
+[^break]: The documentation [mentions](../readme#control-structure)
+          `rb_iter_break()` and `rb_iter_break_value()` for breaking out of a
+          block, but can't you just return early? I can't think of a use-case
+          for these.
