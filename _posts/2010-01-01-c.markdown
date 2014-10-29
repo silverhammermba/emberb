@@ -765,9 +765,10 @@ elsewhere that wraps the call to the useful function.
         there are ways to create UTF-8 strings (`rb_utf8_str_new`), but I
         couldn't get them to work.
 
-[^pi]: The documentation [claims](../readme#exceptions-and-errors) to support the
-       additional format directives `%i` and `%+i` for `to_s` and `inspect` (both
-       take a `VALUE`) but these printed garbage in my tests.
+[^pi]: The documentation [claims](../readme#exceptions-and-errors) that the
+       format directives `%i` and `%+i` can be used for `to_s` and `inspect`
+       (both take a `VALUE`) but a glance at the source shows that this isn't
+       true. `%i` is the same as `%d`.
 
 [^clear]: The documentation [states](../readme#control-structure) that "You have to
           clear the error info [when] ignoring the caught exception". But I can't
