@@ -158,11 +158,11 @@ appropriate:
 * `ULL2NUM()` for `unsigned long long`
 * `DBL2NUM()` for `double`
 
-And then there's the opposite direction, which will try to convert whatever
-`Numeric` to the desired C type. All of these should[^range] raise `RangeError`
-if there's no reasonable conversion.
+And there are macros for the opposite direction, which will try to convert
+whatever `Numeric` to the desired C type, and raise a `RangeError` if there is
+no appropriate conversion.
 
-* `NUM2CHR()` for `char`
+* `NUM2CHR()` for `char` (works for `unsigned char` too)
 * `NUM2SHORT()` for `short`
 * `NUM2USHORT()` for `unsigned short`
 * `NUM2INT()` for `int`
@@ -173,8 +173,15 @@ if there's no reasonable conversion.
 * `NUM2ULL()` for `unsigned long long`
 * `NUM2DBL()` for `double`
 
-These macros will generally be a little slower than the ones from the previous
-sections as they need to do more checks.
+A **major** gotcha with these is that _none_ of the macros for converting to
+unsigned types raise an exception if you pass a negative value (surprisingly
+this [isn't a bug][bug]). Also, `NUM2CHR()` really just calls `NUM2INT()`, so it
+won't raise if the value would fit an `int` but not a `char`.
+
+If you know that the conversion is safe, you should prefer the macros from the
+previous sections as they skip the range checks.
+
+[bug]: https://bugs.ruby-lang.org/issues/9089
 
 #### String ####
 
@@ -635,8 +642,9 @@ the GVL, as described in the next section), there's an easy way to do that:
 {% include thread.h %}
 {% endhighlight %}
 
-Other thread functions are in `ruby/intern.h` (but there's always `rb_funcall()`
-for everything else).
+The cast to `void*` is incidental &ndash; the function immediately casts it back
+to `VALUE`. See the other thread functions in `ruby/intern.h` (but there's
+always `rb_funcall()` for everything else).
 
 ### C in Ruby Threads ###
 
@@ -751,10 +759,8 @@ elsewhere that wraps the call to the useful function.
 [^wrap]: There's also `rb_eval_string_wrap()` but I'm not entirely sure what the
          use-case is for it.
 
-[^chr]: There is `CHR2FIX()`. But that just does some seemingly pointless
-        binary math before using `LONG2FIX()`.
-
-[^range]: I haven't checked.
+[^chr]: There is a `CHR2FIX()` macro, but in my tests this sometimes gave
+        unexpected results. `LONG2FIX()` should work.
 
 [^enc]: I'm not sure how to deal with different encodings (especially wide ones).
 
