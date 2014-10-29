@@ -266,7 +266,7 @@ Many of Ruby's built-in classes have API functions defined for their most useful
 methods. Using them can save you from the verbosity of always using
 `rb_funcall()` and can provide more compile-time checks. There are for too many
 functions to list here, so I recommend checking them out in the header
-`intern.h`.
+`ruby/intern.h`.
 
 Functions are generally named like `rb_(class)_(method)` and take at least one
 `VALUE` argument (the receiver). E.g. `rb_ary_pop()` for `Array#pop`,
@@ -634,6 +634,9 @@ the GVL, as described in the next section), there's an easy way to do that:
 {% highlight c %}
 {% include thread.h %}
 {% endhighlight %}
+
+Other thread functions are in `ruby/intern.h` (but there's always `rb_funcall()`
+for everything else).
 
 ### C in Ruby Threads ###
 

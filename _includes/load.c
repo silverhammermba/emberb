@@ -1,45 +1,22 @@
 #include <ruby.h>
 #include <ruby/thread.h>
-#include <unistd.h>
 
-void* concurrent_func(void* arg)
+VALUE my_thread(VALUE arg)
 {
-	unsigned int* x = arg;
-
-	for (unsigned int i = 0; i < *x; ++i)
-		sleep(1);
-
-	*x *= 2;
-
-	return NULL;
-}
-
-void unblock_func(void* arg)
-{
-	unsigned int* x = arg;
-	*x = 0;
-}
-
-VALUE foo(VALUE self, VALUE x)
-{
-	Check_Type(x, T_FIXNUM);
-
-	unsigned int y = NUM2UINT(x);
-
-	//concurrent_func((void*)&y);
-	rb_thread_call_without_gvl2(concurrent_func, (void*)&y, NULL, NULL);
-
-	return LONG2FIX(y);
+	rb_thread_sleep(5);
+	return arg;
 }
 
 int main(int argc, char* argv[])
 {
 	ruby_init();
 
-	rb_define_global_function("foo", foo, 1);
+	VALUE x = INT2FIX(10);
 
-	int state;
-	rb_eval_string_protect("threads = Array.new(3) { Thread.new { foo 10 } }; threads.map(&:kill)", &state);
+	VALUE thread = rb_thread_create(my_thread, (void*)x);
 
-	return ruby_cleanup(state);
+	x = rb_funcall(thread, rb_intern("join"), 0);
+	rb_funcall(rb_mKernel, rb_intern("p"), 1, x);
+
+	return ruby_cleanup(0);
 }
