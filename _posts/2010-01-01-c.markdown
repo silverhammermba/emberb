@@ -675,13 +675,10 @@ slightly simpler way to release the GVL:
 {% endhighlight %}
 
 Since the function that is run without the GVL gets and returns data using
-`void*`, you may want to define a `struct` for passing data via pointers. Also,
-the last two arguments don't _have_ to be `NULL` but they're ignored, so why
-not?
-
-The downside of the previous approach is that `slow_func` can't be interrupted[^int]
-(by signals, `Thread.kill`, etc.). To allow for that you use a slightly
-different API function:
+`void*`, you may want to define a `struct` for passing data via pointers. So now
+your code will run concurrently in `Thread`s, but you'll find that it can't be
+interrupted (by signals, `Thread.kill`, etc.)! To allow for that you can use the
+last two arguments:
 
 {% highlight c %}
 {% include gvl.h %}
@@ -695,7 +692,7 @@ perform any necessary cleanup before returning.
 Alternatively, if the interrupted function doesn't _need_ to perform any special
 cleanup, you can use the built in unblocking function `RUBY_UBF_IO`[^ubf]
 (which ignores the unblocking argument). That simply forwards the interrupt to
-the running thread.
+the running thread[^int].
 
 If you go through all of that effort to release the GVL only to find that you
 need to make an API call in your unlocked thread, there's a function to
@@ -785,10 +782,11 @@ elsewhere that wraps the call to the useful function.
           block, but can't you just return early? I can't think of a use-case
           for these.
 
-[^int]: The documentation in `thread.c` says "If `rb_thread_call_without_gvl2()`
-        detects interrupt, it returns immediately." but this wasn't the case in
-		my tests. It would wait until it returns normally and _then_ raise the
-		interrupt.
+[^int]: There is also the function `rb_thread_call_without_gvl2()`. The
+        documentation in `thread.c` says that if "[it] detects interrupt, it
+        returns immediately." but I'm not sure what this means. If the
+        unblocking function doesn't kill the thread, it still has to wait for
+        the thread to finish on its own before returning.
 
 [^ubf]: You can also use `RUBY_UBF_PROCESS`, but this seems to be a leftover
         from deprecated code and has the exact same effect.

@@ -4,7 +4,7 @@
 
 void unblocking_func(void* arg)
 {
-	/* signal slow_func to return early */
+	/* somehow tell slow_func to return early */
 }
 
 VALUE my_method(VALUE self)

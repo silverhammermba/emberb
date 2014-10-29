@@ -9,7 +9,7 @@ VALUE my_method(VALUE self)
 {
 	/* arg parsing, API stuff, etc. */
 
-	rb_thread_call_without_gvl2(slow_func, (void*)slow_arg, NULL, NULL);
+	rb_thread_call_without_gvl(slow_func, (void*)slow_arg, NULL, NULL);
 
 	/* more API stuff. probably turn the result of slow_func into a VALUE */
 }
