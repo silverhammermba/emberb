@@ -696,21 +696,39 @@ temporarily reacquire the GVL:
 
 ## See Also ##
 
-You might be interested in checking out [README.EXT](../readme), which is Ruby's
-official API documentation. It's included in the Ruby source as a plain text
-file, but I've HTML-ified it for nicer online reading. It has a bit more
-information than this guide, but in most cases that's because I intentionally
-omitted something that I either found not useful or better documented elsewhere.
+### README.EXT ###
 
-I think one of the handiest resources is the `ruby.h` header itself. The full
+[README.EXT](../readme) is Ruby's official API documentation. It's included in
+the Ruby source as a plain text file, but I've HTML-ified it for nicer online
+reading. It has a bit more information than this guide, but in most cases that's
+because I intentionally omitted something that I either found not useful or
+better documented elsewhere.
+
+### Headers ###
+
+I think some of the handiest resources are the Ruby headers themselves. The full
 API (i.e. everything you get by including `ruby.h`) easily consists of a
 thousand functions, macros, constants, and globals &ndash; most of which have
 never been documented. However _most_ things are reasonably named and you should
-be able to figure out what they do from the header. You should be able to use
-your compiler to "expand" `ruby.h` to show everything that it pulls in. For gcc,
-I use
+be able to figure out what they do from the header. Most everything you need
+should be in the headers `ruby/ruby.h` and `ruby/intern.h`. The former has all
+of the VM and metaprogramming functions, the latter has all of the functions for
+interacting with Ruby's built in classes.
 
-    $ echo '#include <ruby.h>' | gcc -E -P -dD `pkg-config --cflags ruby-2.1` -xc -o ruby.h -
+There are also some headers _not_ pulled in by `ruby.h` which you can include to
+get additional API functionality. Maybe one day I'll write another section to
+this guide going over them:
+
+* `ruby/debug.h` (experimental) functions for profiling and tracing code
+* `ruby/encoding.h` functions for working with string encodings
+* `ruby/io.h` additional functions for Ruby's IO class
+* `ruby/re.h` additional functions for Ruby's Regexp class
+* `ruby/thread.h` functions for working with the [GVL](#c-in-ruby-threads)
+* `ruby/version.h` functions for version introspection. Do not use this as
+  feature-detection code!
+* `ruby/vm.h` (experimental) functions for VM control
+
+### Source ###
 
 If you find some function in the header that isn't documented anywhere, your
 next stop should be the Ruby source code.
