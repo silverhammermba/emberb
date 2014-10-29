@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	rb_define_global_function("foo", foo, 1);
 
 	int state;
-	rb_eval_string_protect("threads = Array.new(3) { Thread.new { foo 10 } }; p threads.map(&:join)", &state);
+	rb_eval_string_protect("threads = Array.new(3) { Thread.new { foo 10 } }; threads.map(&:kill)", &state);
 
 	return ruby_cleanup(state);
 }

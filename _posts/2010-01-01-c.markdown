@@ -644,15 +644,16 @@ Because most of the API is not `Thread` safe, the GVL locks down almost all Ruby
 code so that only a single `Thread` can run at a time. This is the reason why
 you'll often hear people say that `Thread` is not truly concurrent.
 
-The VM automatically applies the GVL to any C code you expose to Ruby. That's
-why you can use the API without worrying about it exploding when someone calls
-your C code from inside a `Thread`. The downside of this is that if your C code
-takes a while to run, you won't see any performance benefit from calling it in
-a `Thread` because **it will block all other threads** while it runs.
-Thankfully, you can tell the VM to release the GVL before running some C code
-and to reacquire it when it completes, allowing for true concurrency. Locking
-and unlocking the GVL does carry a performance hit, so only resort to this if
-you notice that you're having significant problems due to blocked threads.
+The VM also applies the GVL to any C code you expose to Ruby. That's why you can
+use the API without worrying about it exploding when someone calls your C code
+from inside a `Thread`. The downside of this is that if your C code takes a
+while to run, you won't see any performance benefit from calling it in a
+`Thread` because **it will block all other threads** while it runs.  However if
+you have some C code that doesn't need the API, you can tell the VM to release
+the GVL before running your code in a thread and to reacquire it when it
+completes, allowing for true concurrency. Locking and unlocking the GVL does
+carry a performance hit, so only resort to this if you notice that you're having
+significant problems due to blocked threads.
 
 The code to do this is considered so fancy by the Ruby developers that you
 actually need to include another header to use it. First we'll look at the
@@ -667,21 +668,31 @@ Since the function that is run without the GVL gets and returns data using
 the last two arguments don't _have_ to be `NULL` but they're ignored, so why
 not?
 
-The downside of the previous approach is that `slow_func` can't be
-interrupted[^int]. To allow for that you use a slightly different API function:
+The downside of the previous approach is that `slow_func` can't be interrupted[^int]
+(by signals, `Thread.kill`, etc.). To allow for that you use a slightly
+different API function:
 
 {% highlight c %}
 {% include gvl.h %}
 {% endhighlight %}
 
-To make the unblocking function work, you'll probably need to have both
-functions share a pointer to some variable that indicates an interrupt. The
-interrupted function should perform any necessary cleanup before returning.
+The unblocking function is called in the event of an interrupt. To make it work,
+you will probably need to pass a pointer to both functions that can be used to
+communicate an interrupt from one to the other. The interrupted function should
+perform any necessary cleanup before returning.
 
 Alternatively, if the interrupted function doesn't _need_ to perform any special
-cleanup, you can use the built in unblocking function `RUBY_UBF_IO`[^ubf] (which
-ignores the unblocking argument). That simply forwards the interrupt to the
-running thread.
+cleanup, you can use the built in unblocking function `RUBY_UBF_IO`[^ubf]
+(which ignores the unblocking argument). That simply forwards the interrupt to
+the running thread.
+
+If you go through all of that effort to release the GVL only to find that you
+need to make an API call in your unlocked thread, there's a function to
+temporarily reacquire the GVL:
+
+{% highlight c %}
+{% include with_gvl.h %}
+{% endhighlight %}
 
 ## See Also ##
 
