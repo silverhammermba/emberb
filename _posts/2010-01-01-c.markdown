@@ -294,7 +294,7 @@ To raise an exception, use:
 
 The first and second arguments are the exception class and message &ndash; like
 `raise` in Ruby. The big difference is that the message is a format string like
-in `printf`[^pi], letting you more easily build a useful message.
+in `printf()`[^pi], letting you more easily build a useful message.
 
 ### Rescue ###
 
@@ -315,9 +315,9 @@ way to access a rescued exception is also independent of the way it is rescued:
 {% endhighlight %}
 
 `rb_errinfo()` essentially gives you the `VALUE` of Ruby's `$!` (which will be
-`Qnil` if no exception occurred). Unlike in Ruby, the API does not automatically
-clear `$!` after a rescue so you need to clear it manually[^clear]. Otherwise
-later API calls might read the old value and think an exception has occurred.
+`Qnil` if no exception occurred). Unlike in Ruby, you must manually clear the
+exception after reading it[^clear]. Otherwise later API calls might read the old
+value and think another exception has occurred.
 
 Next we will go over several methods of rescuing; you can use whichever you
 like, but I think that generally the right choice is determined by your
