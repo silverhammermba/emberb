@@ -69,8 +69,8 @@ a better way to do that [later on](#send).
 
 Before we go any further, we need to understand `VALUE`s. Due to the danger of
 monkeying around inside the VM, the API never lets you directly access Ruby's
-objects. Instead, your C code will store and pass around _pointers_ to Ruby
-objects (much like variables in Ruby contain pointers to objects). These
+objects[^intern]. Instead, your C code will store and pass around _pointers_ to
+Ruby objects (much like variables in Ruby contain pointers to objects). These
 pointers can be passed to various API functions and macros that will safely
 access and manipulate the Ruby objects. `VALUE` is the API-defined C type for
 these pointers.
@@ -749,6 +749,11 @@ API, but actually aren't. Though in most cases there should be an API function
 elsewhere that wraps the call to the useful function.
 
 ## Footnotes ##
+
+[^intern]: Okay, that's a blatant lie. The API _totally_ lets you mess around
+           with the internal data structures of objects (look for things with
+           names starting with capital R). It's just generally not a good idea
+           and not necessary.
 
 [^undef]: There's also `Qundef` representing an undefined value, but
           this has no Ruby equivalent and is [rarely](#handling-blocks) used.
