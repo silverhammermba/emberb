@@ -1,33 +1,42 @@
 #include <ruby.h>
-#include <ruby/thread.h>
-#include <unistd.h>
+#include <stdlib.h>
 
-void* sleeper(void* arg)
+VALUE foo_m_to_i(VALUE self)
 {
-	sleep(5);
-	return NULL;
+	int* data;
+	Data_Get_Struct(self, int, data);
+
+	return INT2FIX(*data);
 }
 
-void unblock(void* arg)
+VALUE foo_m_initialize(VALUE self, VALUE val)
 {
-	printf("Interrupted\n");
+	int* data;
+	Data_Get_Struct(self, int, data);
+
+	*data = NUM2INT(val);
+
+	return self;
 }
 
-VALUE foo(VALUE self)
+VALUE foo_alloc(VALUE self)
 {
-	rb_thread_call_without_gvl2(sleeper, NULL, unblock, NULL);
-
-	return Qnil;
+	int* data;
+	return Data_Make_Struct(self, int, NULL, -1, data);
 }
 
 int main(int argc, char* argv[])
 {
 	ruby_init();
 
-	rb_define_global_function("foo", foo, 1);
+	VALUE cFoo = rb_define_class("Foo", rb_cObject);
+
+	rb_define_alloc_func(cFoo, foo_alloc);
+	rb_define_method(cFoo, "initialize", foo_m_initialize, 1);
+	rb_define_method(cFoo, "to_i", foo_m_to_i, 0);
 
 	int state;
-	rb_eval_string_protect("threads = Array.new(3) { Thread.new { foo 10 } }; threads.map(&:join)", &state);
+	rb_eval_string_protect("f = Foo.new(1234321); puts f.to_i", &state);
 
 	return ruby_cleanup(state);
 }

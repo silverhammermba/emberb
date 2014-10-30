@@ -1,4 +1,4 @@
-CFLAGS=-std=c99
+CFLAGS=-std=c99 -Wall
 BINS=$(patsubst %.c,%.out,$(wildcard *.c))
 
 all: $(BINS)

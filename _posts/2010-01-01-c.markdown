@@ -622,6 +622,60 @@ Some simple API functions for class/method definitions:
 {% include etc.h %}
 {% endhighlight %}
 
+## Data ##
+
+By now you should be able to create and manipulate Ruby classes using the API,
+but how can you create a Ruby class that encapsulates data from the C world? If
+your data can be naturally translated into `VALUE`s it's easy: just create
+instance variables and assign them `VALUE`s as usual. But what if your data have
+no Ruby analogs (e.g. data structures defined by some C library)?
+
+The API lets you encapsulate C data by creating a `VALUE` of the desired class
+and then storing a `void*` pointing to the C data inside the Ruby object. Then
+whenever you need the C data, you can unpack the pointer and cast it back to the
+correct type. But where does this encapsulation occur? Let's answer that
+question with a question: what happens when you tell Ruby to create an object
+using `new`?  Basically this:
+
+{% highlight ruby %}
+{% include new.rb %}
+{% endhighlight %}
+
+Before calling the _instance method_ `initialize` that we know so well, `new`
+first calls the _class method_ `allocate` in order to actually create the
+object. That is the method you'll need to define if you want your objects to
+wrap C data.
+
+{% highlight c %}
+{% include wrap.h %}
+{% endhighlight %}
+
+This simple example creates the class `Foo` to wrap `int`s (in most cases you'll
+probably be wrapping something more complicated, like a `struct`). After
+allocating the C data, we use the `Data_Wrap_Struct()` macro to wrap the pointer
+in a `VALUE`. The first argument is the class to give the `VALUE`, which here is
+the receiver since we're in a class method. The second argument is used by
+Ruby's garbage collector and will be described later, but as long your C data
+doesn't point to any Ruby objects you don't need it and can pass `NULL`.  The
+third argument is the function that the garbage collector will call when the
+object is destroyed, and last is the data pointer itself. `VALUE`s that wrap C
+data will have type `T_DATA` with respect to the [`TYPE()` macro](#value).
+
+`Data_Get_Struct()` is simpler: it takes the object to unwrap, the type of the
+underlying data, and the pointer to assign the data to.
+
+The previous example can actually be simplified a little. If the function to
+free your data just calls `free()` as in the example, you can have Ruby call
+`free()` for you by passing `-1` for the function pointer (**don't** use `NULL`
+unless you like memory leaks). Similarly, if your allocation is just a
+`malloc()` as in the example, the macro `Data_Make_Struct()` does both the
+allocation and wrapping at once. We could've rewritten the allocation function
+as such:
+
+{% highlight c %}
+{% include makestruct.h %}
+{% endhighlight %}
+
 ## Threading ##
 
 ### Ruby in C Threads ###
