@@ -1,4 +1,4 @@
-void foo_free(void* data)
+void foo_free(int* data)
 {
 	free(data);
 }

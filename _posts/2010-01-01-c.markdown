@@ -695,12 +695,18 @@ referenced `VALUE` as active. The result is that as soon as the garbage
 collector needs to free up memory, your C data is going to end up with an
 invalid reference to a Ruby object.
 
-In the following example, we'll wrap a C struct which contains a `VALUE`. The
-mark function has the same signature as the free function:
+In the following example, we'll wrap a C `struct` which contains a `VALUE`. The
+mark function has the same signature as the free function and all it has to do
+is mark any `VALUE`s in the `struct`:
 
 {% highlight c %}
 {% include mark.h %}
 {% endhighlight %}
+
+If your `struct` contains a pointer to a C array of `VALUE`s, you can instead
+use `rb_gc_mark_locations()` which takes two arguments: the pointers to the
+start and end of the array (the end being equal to the starting pointer plus the
+array length)[^maybe].
 
 ## Threading ##
 
@@ -876,3 +882,6 @@ elsewhere that wraps the call to the useful function.
 
 [^ubf]: You can also use `RUBY_UBF_PROCESS`, but this seems to be a leftover
         from deprecated code and has the exact same effect.
+
+[^maybe]: There's also the enigmatically named `rb_gc_mark_maybe()`, but I'm not
+          sure when it is needed.
