@@ -22,7 +22,7 @@ VALUE foo_m_initialize(VALUE self, VALUE val)
 VALUE foo_alloc(VALUE self)
 {
 	int* data;
-	return Data_Make_Struct(self, int, NULL, -1, data);
+	return Data_Make_Struct(self, int, NULL, RUBY_DEFAULT_FREE, data);
 }
 
 int main(int argc, char* argv[])

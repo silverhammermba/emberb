@@ -628,7 +628,7 @@ By now you should be able to create and manipulate Ruby classes using the API,
 but how can you create a Ruby class that encapsulates data from the C world? If
 your data can be naturally translated into `VALUE`s it's easy: just create
 instance variables and assign them `VALUE`s as usual. But what if your data have
-no Ruby analogs (e.g. data structures defined by some C library)?
+no Ruby analog (e.g. data structures defined by some C library)?
 
 The API lets you encapsulate C data by creating a `VALUE` of the desired class
 and then storing a `void*` pointing to the C data inside the Ruby object. Then
@@ -650,30 +650,56 @@ wrap C data.
 {% include wrap.h %}
 {% endhighlight %}
 
-This simple example creates the class `Foo` to wrap `int`s (in most cases you'll
-probably be wrapping something more complicated, like a `struct`). After
-allocating the C data, we use the `Data_Wrap_Struct()` macro to wrap the pointer
-in a `VALUE`. The first argument is the class to give the `VALUE`, which here is
-the receiver since we're in a class method. The second argument is used by
-Ruby's garbage collector and will be described later, but as long your C data
-doesn't point to any Ruby objects you don't need it and can pass `NULL`.  The
-third argument is the function that the garbage collector will call when the
-object is destroyed, and last is the data pointer itself. `VALUE`s that wrap C
-data will have type `T_DATA` with respect to the [`TYPE()` macro](#value).
+This simple example create the class `Foo` which wraps an `int` that can be set
+by `initialize` (in most cases you'll probably be wrapping something more
+complicated, like a `struct`). After allocating the C data, we use the
+`Data_Wrap_Struct()` macro to wrap the pointer in a `VALUE`. The first argument
+is the class to give the `VALUE`, which here is the receiver since we're in a
+class method. The second argument is used by Ruby's garbage collector and will
+be described later, but as long your C data doesn't point to any Ruby objects
+you don't need it and can pass `NULL`.  The third argument is the function that
+the garbage collector will call when the object is destroyed, and last is the
+data pointer itself. `VALUE`s that wrap C data will have type `T_DATA` with
+respect to the [`TYPE()` macro](#value).
 
 `Data_Get_Struct()` is simpler: it takes the object to unwrap, the type of the
 underlying data, and the pointer to assign the data to.
 
 The previous example can actually be simplified a little. If the function to
-free your data just calls `free()` as in the example, you can have Ruby call
-`free()` for you by passing `-1` for the function pointer (**don't** use `NULL`
-unless you like memory leaks). Similarly, if your allocation is just a
-`malloc()` as in the example, the macro `Data_Make_Struct()` does both the
-allocation and wrapping at once. We could've rewritten the allocation function
-as such:
+free your data just calls `free()` as in the example, you can pass
+`RUBY_DEFAULT_FREE` as the function pointer and Ruby will free it for you
+(**don't** use `NULL` unless you like memory leaks). Similarly, if your
+allocation is just a `malloc()` as in the example, the macro
+`Data_Make_Struct()` does both the allocation and wrapping at once. We could've
+rewritten the allocation function as such:
 
 {% highlight c %}
 {% include makestruct.h %}
+{% endhighlight %}
+
+### Marking ###
+
+That `NULL` argument we passed to the wrapping macros is the pointer to your
+object's "mark function". This is so named because of the garbage collector's
+"mark and sweep" algorithm. The basic idea behind mark and sweep is that when
+the garbage collector needs to free up memory, it performs two passes: the first
+(mark) pass iterates through every _referenced_ Ruby object and marks it as
+active, then the second (sweep) pass iterates through every _allocated_ Ruby
+object and frees the ones that haven't been marked active.
+
+This is relevant to wrapping C data because it's possible that you might wrap a
+C `struct` which contains a Ruby `VALUE` &ndash; which the garbage collector is
+responsible for cleaning up. Since the garbage collector is only aware of
+`VALUE`s referenced _by Ruby_ (not by C pointers), it won't be able to mark the
+referenced `VALUE` as active. The result is that as soon as the garbage
+collector needs to free up memory, your C data is going to end up with an
+invalid reference to a Ruby object.
+
+In the following example, we'll wrap a C struct which contains a `VALUE`. The
+mark function has the same signature as the free function:
+
+{% highlight c %}
+{% include mark.h %}
 {% endhighlight %}
 
 ## Threading ##
