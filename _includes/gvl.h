@@ -11,7 +11,7 @@ VALUE my_method(VALUE self)
 {
 	/* ... */
 
-	rb_thread_call_without_gvl(slow_func, (void*)slow_arg, unblocking_func, (void*)unblocking_arg);
+	rb_thread_call_without_gvl(slow_func, slow_arg, unblocking_func, unblocking_arg);
 
 	/* ... */
 }
