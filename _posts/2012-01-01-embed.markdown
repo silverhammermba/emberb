@@ -22,7 +22,7 @@ options for your distribution:
 Including the Ruby interpreter in your C/C++ program is pretty simple. Just
 include the header and bookend your API calls with a couple function calls.
 
-{% highlight c linenos %}
+{% highlight c %}
 {% include simple.c %}
 {% endhighlight %}
 
@@ -44,7 +44,7 @@ call `ruby_finalize()` they will be raised normally (see the section on
 
 Here's an alternative example:
 
-{% highlight c linenos %}
+{% highlight c %}
 {% include advanced.c %}
 {% endhighlight %}
 
@@ -68,7 +68,7 @@ You can also pass options to the VM just like you would to `ruby` on the command
 line. This is handy for stuff like setting the warning level or verbose
 mode[^opt].
 
-{% highlight c linenos %}
+{% highlight c %}
 {% include options.c %}
 {% endhighlight %}
 
@@ -83,7 +83,7 @@ cases (such as a syntax error) the node will be invalid and you shouldn't run
 it. `ruby_executable_node()` checks for this. If the node is valid, you can run it
 with `ruby_exec_node()`. The state returned by `ruby_executable_node()` (through
 the pointer) and by `ruby_exec_node()` will be nonzero if an exception was
-rescued while compiling or running the code. You can [read the exception
+raised while compiling or running the code. You can [read the exception
 yourself](../c#rescue), or just pass `state` to `ruby_cleanup()` and it will
 print an appropriate error message.
 
@@ -97,7 +97,7 @@ Now you're ready to interact with Ruby! Go back to the [C API](../c).
 ## Footnotes ##
 
 [^err]: `ruby_init()` uses `error_print()` to get an error message, but this
-        function isn't exposed to the API. Is this just a normal exception?
+        function isn't exposed to the API. Is this a normal exception?
 
 [^opt]: In my tests I couldn't get flags like `-w` and `-v` to do anything. This
         could be related to `ruby_prog_init()`. And really it should be possible

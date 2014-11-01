@@ -753,12 +753,13 @@ The VM also applies the GVL to any C code you expose to Ruby. That's why you can
 use the API without worrying about it exploding when someone calls your C code
 from inside a `Thread`. The downside of this is that if your C code takes a
 while to run, you won't see any performance benefit from calling it in a
-`Thread` because **it will block all other threads** while it runs.  However if
-you have some C code that doesn't need the API, you can tell the VM to release
-the GVL before running your code in a thread and to reacquire it when it
-completes, allowing for true concurrency. Locking and unlocking the GVL does
-carry a performance hit, so only resort to this if you notice that you're having
-significant problems due to blocked threads.
+`Thread` because **it will block all other threads** while it runs.  But the GVL
+is only needed to protect API calls. If you have some C code that doesn't use
+the API, you can tell the VM to release the GVL before running your code in a
+thread and to reacquire it when it completes, allowing for true concurrency.
+Locking and unlocking the GVL does carry a performance hit, so only resort to
+this if you notice that you're having significant problems due to blocked
+threads.
 
 The code to do this is considered so fancy by the Ruby developers that you
 actually need to include another header to use it. First we'll look at the
@@ -769,10 +770,12 @@ slightly simpler way to release the GVL:
 {% endhighlight %}
 
 Since the function that is run without the GVL gets and returns data using
-`void*`, you may want to define a `struct` for passing data via pointers. So now
-your code will run concurrently in `Thread`s, but you'll find that it can't be
-interrupted (by signals, `Thread.kill`, etc.)! To allow for that you can use the
-last two arguments:
+`void*`, you may want to define a `struct` for passing data via pointers.
+
+If you unlock the GVL as above you will find that while your code does run
+concurrently, it can't be interrupted (by signals, `Thread.kill`, etc.)! To
+allow for that you must pass an unblocking function using the last two
+arguments:
 
 {% highlight c %}
 {% include gvl.h %}
