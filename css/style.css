@@ -6317,6 +6317,9 @@ dt {
 dd {
   padding-left: 40px;
 }
+footer {
+  text-align: center;
+}
 /* fix bootstrap wrapping (UGH!) code */
 pre {
   overflow-x: auto;
@@ -6330,9 +6333,6 @@ pre code {
 code {
   color: #2E790E;
   background-color: #E7F5E8;
-}
-.highlight .lineno {
-  color: #AB8B25;
 }
 #sidebar-wrapper {
   overflow: hidden;
