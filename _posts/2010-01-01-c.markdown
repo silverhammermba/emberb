@@ -270,7 +270,7 @@ is just like `rb_funcallv()` but with the proc on the end.
 {% endhighlight %}
 
 If you don't have a proc for the block, you'll need to define a certain kind of
-C function to represent the block[^break]. Then there's a different variant of
+C function to represent the block. Then there's a different variant of
 `rb_funcallv()` but with a couple extra arguments for the block:
 
 {% highlight c %}
@@ -281,7 +281,7 @@ The last argument to `rb_block_call()` is helpful for passing in values outside
 the block function's scope, but in this example we don't need it (thus `nil`). I
 also recommend against using the first argument to your block function unless
 you're **sure** that only one value was yielded. You can always get all the
-arguments from `argv`, so why not play it safe?
+arguments from `argv`, so why not play it safe?[^break]
 
 ## Builtins ##
 
@@ -801,7 +801,7 @@ arguments:
 The unblocking function is called in the event of an interrupt. To make it work,
 you will probably need to pass a pointer to both functions that can be used to
 communicate an interrupt from one to the other. The interrupted function should
-perform any necessary cleanup before returning.
+perform any necessary cleanup before returning early.
 
 Alternatively, if the interrupted function doesn't _need_ to perform any special
 cleanup, you can use the built in unblocking function `RUBY_UBF_IO`[^ubf]
