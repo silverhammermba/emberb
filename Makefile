@@ -3,8 +3,8 @@ build:
 	jekyll build
 	cp -r _site/css ./
 
-code:
-	$(MAKE) -C _includes
+test:
+	$(MAKE) -C _test
 
 serve:
 	jekyll serve --watch --baseurl=
