@@ -190,12 +190,28 @@ Ruby's `String` kinda corresponds to C's `char*`. The simplest macro is
 problem here is that a Ruby `String` _might contain nulls_ - in which case
 `StringValueCStr()` will raise an `ArgumentError`! Instead you can use the
 macros `StringValuePtr()` and `RSTRING_LEN()` to get a (possibly unterminated)
-`char*` and the string's length as a `long`[^enc].
+`char*` and the string's length as a `long`.
 
 Conversely, if you have a null-terminated `char*`, you can use
 `rb_str_new_cstr()` to create a Ruby `String`. And if you want your `String` to
 contain nulls, use `rb_str_new()` which takes a `char*` and the string's length
-(as a `long`)[^utf].
+(as a `long`). The encodings of these strings will be `ASCII-8BIT`, which is
+often undesirable in Ruby. You can pass the string `VALUE` to
+`rb_str_export_locale()` to get a new `VALUE` with your locale's
+encoding[^wchar].
+
+If you want to build more complex strings, you can do so using the `printf`-like
+function `rb_sprintf()`. This accepts all of the usual conversion specifiers,
+but also accepts an API-defined specifier `PRIsVALUE` which takes a
+corresponding `VALUE` argument. This conversion specifier substitutes a string
+by sending the object `to_s`. You can substitute the result of `inspect` by
+using the `+` flag with the specifier.
+
+{% highlight c %}
+{% include printf.h %}
+{% endhighlight %}
+
+This custom specifier should work for any `printf`-like function in the API.
 
 #### Symbol ####
 
@@ -293,8 +309,9 @@ To raise an exception, use:
 {% endhighlight %}
 
 The first and second arguments are the exception class and message &ndash; like
-`raise` in Ruby. The big difference is that the message is a format string like
-in `printf()`[^pi], letting you more easily build a useful message.
+`raise` in Ruby. The big difference is that the message is a format string [just
+like in `rb_sprintf()`](#string), letting you more easily build a useful
+message.
 
 ### Rescue ###
 
@@ -861,11 +878,9 @@ elsewhere that wraps the call to the useful function.
 [^chr]: There is a `CHR2FIX()` macro, but in my tests this sometimes gave
         unexpected results. `LONG2FIX()` should work.
 
-[^enc]: I'm not sure how to deal with different encodings (especially wide ones).
-
-[^utf]: Again, the documentation [mentions](../readme#string-functions) that
-        there are ways to create UTF-8 strings (`rb_utf8_str_new`), but I
-        couldn't get them to work.
+[^wchar]: I don't know what the best way is to handle `wchar_t`. In my tests I had
+          some success just treating them as `char`s, but I think that may have
+          been a happy accident, and could certainly fail on different platforms.
 
 [^pi]: The documentation [claims](../readme#exceptions-and-errors) that the
        format directives `%i` and `%+i` can be used for `to_s` and `inspect`
