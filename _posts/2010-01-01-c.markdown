@@ -46,7 +46,7 @@ After you finish that, come back here to learn about the API.
 The quick 'n' dirty way to run some Ruby code from C is to `eval` it
 
 {% highlight c %}
-{% include eval.h %}
+{% include c/eval.h %}
 {% endhighlight %}
 
 This is a good fallback if you can't find an API function for something that you
@@ -80,7 +80,7 @@ Probably the most frequent question you'll have is "what is the class of this
 macro.
 
 {% highlight c %}
-{% include type.h %}
+{% include c/type.h %}
 {% endhighlight %}
 
 Given a `VALUE`, `TYPE()` returns one of the [`T_`
@@ -98,7 +98,7 @@ If you have a specific class in mind, there are faster checks than that big
 switch statement:
 
 {% highlight c %}
-{% include checktype.h %}
+{% include c/checktype.h %}
 {% endhighlight %}
 
 If you instead want the `VALUE` of the class object, use the `CLASS_OF()` macro.
@@ -208,7 +208,7 @@ by sending the object `to_s`. You can substitute the result of `inspect` by
 using the `+` flag with the specifier.
 
 {% highlight c %}
-{% include printf.h %}
+{% include c/printf.h %}
 {% endhighlight %}
 
 This custom specifier should work for any `printf`-like function in the API.
@@ -242,13 +242,13 @@ compile-time checking.
 The easiest way to send an object a method looks like this:
 
 {% highlight c %}
-{% include funcall.h %}
+{% include c/funcall.h %}
 {% endhighlight %}
 
 This is roughly equivalent to the Ruby code
 
 {% highlight ruby %}
-{% include funcall.rb %}
+{% include c/funcall.rb %}
 {% endhighlight %}
 
 The first argument is the receiver. The next is the [`ID`](#symbol) for the
@@ -266,7 +266,7 @@ If you want to pass a `Proc` as the block to a method, that's easy. The function
 is just like `rb_funcallv()` but with the proc on the end.
 
 {% highlight c %}
-{% include proc.h %}
+{% include c/proc.h %}
 {% endhighlight %}
 
 If you don't have a proc for the block, you'll need to define a certain kind of
@@ -274,7 +274,7 @@ C function to represent the block. Then there's a different variant of
 `rb_funcallv()` but with a couple extra arguments for the block:
 
 {% highlight c %}
-{% include block.h %}
+{% include c/block.h %}
 {% endhighlight %}
 
 The last argument to `rb_block_call()` is helpful for passing in values outside
@@ -305,7 +305,7 @@ exceptions by now, so I should probably talk about them.
 To raise an exception, use:
 
 {% highlight c %}
-{% include raise.h %}
+{% include c/raise.h %}
 {% endhighlight %}
 
 The first and second arguments are the exception class and message &ndash; like
@@ -320,7 +320,7 @@ the code you're protecting to be in a function that takes and returns a single
 `VALUE`.
 
 {% highlight c %}
-{% include danger.h %}
+{% include c/danger.h %}
 {% endhighlight %}
 
 Unless you wanted to protect a function of exactly this type, you will probably
@@ -328,7 +328,7 @@ need to make a wrapper function in this format that makes the desired call. The
 way to access a rescued exception is also independent of the way it is rescued:
 
 {% highlight c %}
-{% include handle.h %}
+{% include c/handle.h %}
 {% endhighlight %}
 
 `rb_errinfo()` essentially gives you the `VALUE` of Ruby's `$!` (which will be
@@ -348,7 +348,7 @@ want to rescue an exception in the API, you can use `rb_rescue2()` which is
 similar to Ruby's `rescue`.
 
 {% highlight c %}
-{% include rescue2.h %}
+{% include c/rescue2.h %}
 {% endhighlight %}
 
 The first two arguments are the function to protect and its argument, the next
@@ -380,7 +380,7 @@ exception will segfault the VM and kill your program**. You could call
 all exceptions:
 
 {% highlight c %}
-{% include protect.h %}
+{% include c/protect.h %}
 {% endhighlight %}
 
 Like `rb_rescue2()`, the first two arguments are for calling the function to
@@ -398,7 +398,7 @@ rescue; ensure; end` structure as in Ruby, you'll need another layer of
 wrapping:
 
 {% highlight c %}
-{% include ensure.h %}
+{% include c/ensure.h %}
 {% endhighlight %}
 
 Like `ensure` in Ruby, the return value of `ensure_func()` is never used.  If no
@@ -433,14 +433,14 @@ method calls. For example, rather than `class Foo; def bar; end; end`, think `Fo
 The simplest way to deal with globals is:
 
 {% highlight c %}
-{% include global.h %}
+{% include c/global.h %}
 {% endhighlight %}
 
 If you're frequently accessing Ruby's globals, you can set up a `VALUE` which
 will be automatically synchronized with one.
 
 {% highlight c %}
-{% include global2.h %}
+{% include c/global2.h %}
 {% endhighlight %}
 
 The `VALUE` should be initialized before you create the global in Ruby and it
@@ -455,7 +455,7 @@ one of the previous functions), you must tell the garbage collector about it to
 prevent it from being prematurely cleaned up:
 
 {% highlight c %}
-{% include gc.h %}
+{% include c/gc.h %}
 {% endhighlight %}
 
 ### Class and Instance Variables ###
@@ -464,7 +464,7 @@ Getting/setting instance variables is similar to the simple way of accessing
 globals, but of course you need an object to get the variable from.
 
 {% highlight c %}
-{% include ivar.h %}
+{% include c/ivar.h %}
 {% endhighlight %}
 
 There isn't an automatic way to synchronize instance variables like you can with
@@ -478,7 +478,7 @@ course the first argument should be a class object.
 You define constants similarly, but with the module to define them under:
 
 {% highlight c %}
-{% include constant.h %}
+{% include c/constant.h %}
 {% endhighlight %}
 
 Getting a constant's `VALUE` is a little nuanced. The API function you call
@@ -486,7 +486,7 @@ depends on what you want to happen if the constant is _not_ defined in the
 module you specify:
 
 {% highlight c %}
-{% include const_get.h %}
+{% include c/const_get.h %}
 {% endhighlight %}
 
 All of these API calls will get private constants too.
@@ -496,13 +496,13 @@ All of these API calls will get private constants too.
 Defining modules is super easy.
 
 {% highlight c %}
-{% include module.h %}
+{% include c/module.h %}
 {% endhighlight %}
 
 Classes work the same but you need to give them a superclass.
 
 {% highlight c %}
-{% include class.h %}
+{% include c/class.h %}
 {% endhighlight %}
 
 ### Methods ###
@@ -514,7 +514,7 @@ argument for the receiver of the method. There are three ways you can define its
 other arguments:
 
 {% highlight c %}
-{% include methodc.h %}
+{% include c/methodc.h %}
 {% endhighlight %}
 
 So really the API only lets you define two types of methods: ones that take a
@@ -531,7 +531,7 @@ To use it, you should use the C array function definition, then you can pass
 `argc` and `argv` along to:
 
 {% highlight c %}
-{% include scan.h %}
+{% include c/scan.h %}
 {% endhighlight %}
 
 Here `fmt` is a format string describing how the method arguments would look in
@@ -560,7 +560,7 @@ block).
 raise a fitting exception if the wrong number of arguments were passed.
 
 {% highlight c %}
-{% include methodex.h %}
+{% include c/methodex.h %}
 {% endhighlight %}
 
 You can also use the return value of `rb_scan_args()` to determine how the
@@ -572,7 +572,7 @@ Ruby.
 There are two ways to check if your C method has been called with a block:
 
 {% highlight c %}
-{% include checkblock.h %}
+{% include c/checkblock.h %}
 {% endhighlight %}
 
 There are two ways to capture the block as a proc. If you're using
@@ -586,7 +586,7 @@ equivalent to `Proc.new` which converts the method's block to a proc:
 If you don't want to capture the block, there are a few ways to yield to it:
 
 {% highlight c %}
-{% include yield.h %}
+{% include c/yield.h %}
 {% endhighlight %}
 
 There's also `rb_yield_values2()` which is like `rb_yield_values()` but instead
@@ -597,7 +597,7 @@ of varargs the second argument is a `VALUE*`[^yield].
 You might want to call `super` in your method.
 
 {% highlight c %}
-{% include super.h %}
+{% include c/super.h %}
 {% endhighlight %}
 
 Unlike in Ruby `rb_call_super()` will **not** implicty pass along the method
@@ -620,7 +620,7 @@ in Ruby. Every API call to create a method takes at least the method name
 Everything is pretty self-explanatory from there:
 
 {% highlight c %}
-{% include methodr.h %}
+{% include c/methodr.h %}
 {% endhighlight %}
 
 There's also a shortcut for defining a method in a module _and_ its
@@ -628,7 +628,7 @@ singleton class. This is used a lot in `Math`, for example, letting you `include
 Math` to avoid typing `Math.` before every method call.
 
 {% highlight c %}
-{% include modulefunc.h %}
+{% include c/modulefunc.h %}
 {% endhighlight %}
 
 ### Other Stuff ###
@@ -636,7 +636,7 @@ Math` to avoid typing `Math.` before every method call.
 Some simple API functions for class/method definitions:
 
 {% highlight c %}
-{% include etc.h %}
+{% include c/etc.h %}
 {% endhighlight %}
 
 ## Data ##
@@ -655,7 +655,7 @@ question with a question: what happens when you tell Ruby to create an object
 using `new`?  Basically this:
 
 {% highlight ruby %}
-{% include new.rb %}
+{% include c/new.rb %}
 {% endhighlight %}
 
 Before calling the _instance method_ `initialize` that we know so well, `new`
@@ -664,7 +664,7 @@ object. That is the method you'll need to define if you want your objects to
 wrap C data.
 
 {% highlight c %}
-{% include wrap.h %}
+{% include c/wrap.h %}
 {% endhighlight %}
 
 This simple example create the class `Foo` which wraps an `int` that can be set
@@ -700,7 +700,7 @@ if your allocation is just a `malloc()` as in the example, the macro
 rewritten the allocation function as such:
 
 {% highlight c %}
-{% include makestruct.h %}
+{% include c/makestruct.h %}
 {% endhighlight %}
 
 ### Marking ###
@@ -726,7 +726,7 @@ mark function has the same signature as the free function and all it has to do
 is mark any `VALUE`s in the `struct`:
 
 {% highlight c %}
-{% include mark.h %}
+{% include c/mark.h %}
 {% endhighlight %}
 
 If your `struct` contains a pointer to a C array of `VALUE`s, you can instead
@@ -751,7 +751,7 @@ If you just want to create normal Ruby `Thread`s using the API (and don't mind
 the GVL, as described in the next section), there's an easy way to do that:
 
 {% highlight c %}
-{% include thread.h %}
+{% include c/thread.h %}
 {% endhighlight %}
 
 Other `Thread` functions are in `ruby/intern.h` (but there's always
@@ -783,7 +783,7 @@ actually need to include another header to use it. First we'll look at the
 slightly simpler way to release the GVL:
 
 {% highlight c %}
-{% include gvl2.h %}
+{% include c/gvl2.h %}
 {% endhighlight %}
 
 Since the function that is run without the GVL gets and returns data using
@@ -795,7 +795,7 @@ allow for that you must pass an unblocking function using the last two
 arguments:
 
 {% highlight c %}
-{% include gvl.h %}
+{% include c/gvl.h %}
 {% endhighlight %}
 
 The unblocking function is called in the event of an interrupt. To make it work,
@@ -813,7 +813,7 @@ need to make an API call in your unlocked thread, there's a function to
 temporarily reacquire the GVL:
 
 {% highlight c %}
-{% include with_gvl.h %}
+{% include c/with_gvl.h %}
 {% endhighlight %}
 
 ## See Also ##

@@ -23,7 +23,7 @@ Including the Ruby interpreter in your C/C++ program is pretty simple. Just
 include the header and bookend your API calls with a couple function calls.
 
 {% highlight c %}
-{% include simple.c %}
+{% include embed/simple.c %}
 {% endhighlight %}
 
 If the VM fails to start during `ruby_init()` it will print an error and exit
@@ -45,7 +45,7 @@ call `ruby_finalize()` they will be raised normally (see the section on
 Here's an alternative example:
 
 {% highlight c %}
-{% include advanced.c %}
+{% include embed/advanced.c %}
 {% endhighlight %}
 
 ## Tweaking the VM ##
@@ -69,7 +69,7 @@ line. This is handy for stuff like setting the warning level or verbose
 mode[^opt].
 
 {% highlight c %}
-{% include options.c %}
+{% include embed/options.c %}
 {% endhighlight %}
 
 The arguments to `ruby_options` are `argc` and `argv` just like a main function.

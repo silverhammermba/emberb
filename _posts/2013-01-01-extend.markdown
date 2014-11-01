@@ -14,7 +14,7 @@ appropriate makefile for you.
 First create the file `extconf.rb` in the same directory as your C code:
 
 {% highlight ruby %}
-{% include ext/extconf.rb %}
+{% include extend/ext/extconf.rb %}
 {% endhighlight %}
 
 The preparation section should perform actions similar to the standard UNIX
@@ -31,7 +31,7 @@ Ruby at your disposal if you need it). For example, an extension which uses SDL2
 and needs to know how big `int`s are might call:
 
 {% highlight ruby %}
-{% include ext/exex.rb %}
+{% include extend/ext/exex.rb %}
 {% endhighlight %}
 
 `create_header` creates the file `extconf.h` containing preprocessor definitions
@@ -39,7 +39,7 @@ based on the results of the `mkmf` functions you called previously. For this
 example, `extconf.h` might contain
 
 {% highlight c %}
-{% include ext/exh.h %}
+{% include extend/ext/exh.h %}
 {% endhighlight %}
 
 This header should be included in your C files so that you can adapt your code
@@ -86,7 +86,7 @@ argument you passed to `create_makefile` in `extconf.rb`. We used "foobar" in
 our example, so we'll create `foobar.c` containing
 
 {% highlight c %}
-{% include ext/foobar.c %}
+{% include extend/ext/foobar.c %}
 {% endhighlight %}
 
 ### Filenames ###
@@ -115,7 +115,7 @@ creating gems, but as far as C extensions go you just need to tell the spec
 about `extconf.rb`[^rbg]:
 
 {% highlight ruby %}
-{% include foobar.gemspec %}
+{% include extend/foobar.gemspec %}
 {% endhighlight %}
 
 If your gem includes multiple independent extensions, you can organize them in
