@@ -822,8 +822,9 @@ temporarily reacquire the GVL:
 
 [README.EXT](../readme) is Ruby's official API documentation. It's included in
 the Ruby source as a plain text file, but I've HTML-ified it for nicer online
-reading. It has a bit more information than this guide, but in most cases that's
-because I intentionally omitted something that I either found not useful or
+reading. It's a bit spotty and has some poor recommendations (in my opinion),
+but it is also a little more exhaustive on certain topics. In many cases this is
+because I intentionally skipped something that I either found not useful or
 better documented elsewhere.
 
 ### Headers ###
