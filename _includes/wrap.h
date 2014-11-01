@@ -1,3 +1,5 @@
+#include <stdlib.h>
+
 void foo_free(int* data)
 {
 	free(data);
