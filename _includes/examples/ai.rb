@@ -8,6 +8,5 @@ def think ai, player
   # ... movement logic ...
 
   # move in this direction
-  ai.move -dx, -dy
-  #ai.move x, y
+  ai.move x, y
 end
