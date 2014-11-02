@@ -34,6 +34,16 @@ struct actor
 	SDL_Color color;
 };
 
+void handle_ruby_error()
+{
+	ai_error = true;
+
+	VALUE exception = rb_errinfo();
+	rb_set_errinfo(Qnil);
+
+	rb_warn("AI script error: %"PRIsVALUE"\n", exception);
+}
+
 /* try to (re)load AI script */
 void update_ai()
 {
@@ -41,6 +51,8 @@ void update_ai()
 	FILE* script = fopen(ai_script, "rb");
 	if (!script)
 	{
+		if (ai_loaded)
+			fprintf(stderr, "Can't load AI script\n");
 		ai_loaded = false;
 		return;
 	}
@@ -49,6 +61,8 @@ void update_ai()
 	struct stat script_stat;
 	if (fstat(fileno(script), &script_stat))
 	{
+		if (ai_loaded)
+			fprintf(stderr, "Can't stat AI script\n");
 		ai_loaded = false;
 		return;
 	}
@@ -65,13 +79,14 @@ void update_ai()
 	ai_load_time = script_stat.st_mtime;
 
 	/* read sript */
-	char* buffer = malloc(script_stat.st_size);
+	char* buffer = malloc(script_stat.st_size + 1);
 	if (!buffer)
 	{
 		fprintf(stderr, "malloc failure\n");
 		exit(1);
 	}
 	fread(buffer, 1, script_stat.st_size, script);
+	buffer[script_stat.st_size] = '\0';
 
 	ai_error = false;
 
@@ -82,7 +97,7 @@ void update_ai()
 	free(buffer);
 
 	if (state)
-		ai_error = true;
+		handle_ruby_error();
 }
 
 VALUE think_wrapper(VALUE unused)
@@ -110,14 +125,7 @@ void ai_think(struct actor* act)
 	rb_protect(think_wrapper, Qundef, &state);
 
 	if (state)
-	{
-		ai_error = true;
-
-		VALUE exception = rb_errinfo();
-		rb_set_errinfo(Qnil);
-
-		rb_warn("AI script error: %"PRIsVALUE"\n", exception);
-	}
+		handle_ruby_error();
 }
 
 /* move actor after ms time has elapsed */
