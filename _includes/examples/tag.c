@@ -36,7 +36,7 @@ struct actor
 };
 
 /* for handling exceptions from protect calls */
-void handle_ruby_error()
+void show_script_error()
 {
 	ai_error = true;
 
@@ -59,15 +59,10 @@ void update_ai(struct actor* act)
 		return;
 	}
 
-	/* return if we've already loaded the script and it hasn't been updated */
-	if (ai_loaded)
-	{
-		if (ai_load_time == script_stat.st_mtime)
-			return;
-	}
-	else
-		ai_loaded = true;
+	/* nothing to do if we've already loaded the script and it hasn't been updated */
+	if (ai_loaded && ai_load_time == script_stat.st_mtime) return;
 
+	ai_loaded = true;
 	ai_load_time = script_stat.st_mtime;
 
 	fprintf(stderr, "Loading AI...\n");
@@ -79,8 +74,7 @@ void update_ai(struct actor* act)
 	int state;
 	rb_load_protect(rb_str_new_cstr(ai_script), 0, &state);
 
-	if (state)
-		handle_ruby_error();
+	if (state) show_script_error();
 }
 
 /* for rescuing exceptions in the AI script */
@@ -106,8 +100,7 @@ void ai_think(struct actor* act, VALUE ai_v, VALUE player_v)
 	int state;
 	rb_protect(think_wrapper, rb_ary_new_from_args(2, ai_v, player_v), &state);
 
-	if (state)
-		handle_ruby_error();
+	if (state) show_script_error();
 }
 
 /* move actor after ms time has elapsed */
