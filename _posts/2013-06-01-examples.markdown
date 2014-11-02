@@ -20,10 +20,10 @@ The Ruby script can look something like this:
 
 The C code uses SDL2 for graphics and input and uses `stat()` (which may not be
 very portable) to hot-reload the AI script whenever the file is changed . Here's
-the C code:
+`tag.c`:
 
 {% highlight c %}
-{% include examples/embed.c %}
+{% include examples/tag.c %}
 {% endhighlight %}
 
 The Makefile is nothing special:

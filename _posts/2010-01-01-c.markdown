@@ -51,19 +51,22 @@ The quick 'n' dirty way to run some Ruby code from C is to `eval` it
 
 This is a good fallback if you can't find an API function for something that you
 want to do[^wrap]. `rb_eval_string_protect()` returns the result of the Ruby
-code (all Ruby code returns something) and sets `state` to some nonzero value if
-any exception is raised. `VALUE` is the C data type for all Ruby objects, as
-explained in the next section.
+code and sets `state` to some nonzero value if any exception is raised. `VALUE`
+is the C data type for all Ruby objects, as explained in the next section.
 
 If `state` is nonzero, `result` will be a `VALUE` representing `nil` and you
 should handle the exception. Alternatively, you can use `rb_eval_string()` which
 doesn't take a `state` argument and instead raises any exceptions normally. See
 [Exceptions](#exceptions) for how to handle both of these cases.
 
-However, like using `eval` in Ruby, using this function is not a good practice.
-It's inefficient since it has to invoke the parser and it somewhat defeats the
-point of writing in C. If you just want to call some Ruby method, we'll go over
-a better way to do that [later on](#send).
+Unlike `eval` in Ruby, these functions evaluate the string in an isolated
+binding &ndash; like when you `require` code. So local variables in the string
+will not be accessible from elsewhere and vice versa.
+
+However, like using `eval` in Ruby, using these functions is not a good
+practice. It's inefficient since the parser is invoked and it somewhat defeats
+the point of writing in C. If you just want to call some Ruby method, we'll go
+over a better way to do that [later on](#send).
 
 ## VALUE ##
 
@@ -204,14 +207,16 @@ If you want to build more complex strings, you can do so using the `printf`-like
 function `rb_sprintf()`. This accepts all of the usual conversion specifiers,
 but also accepts an API-defined specifier `PRIsVALUE` which takes a
 corresponding `VALUE` argument. This conversion specifier substitutes a string
-by sending the object `to_s`. You can substitute the result of `inspect` by
-using the `+` flag with the specifier.
+by sending the object `to_s`. You can substitute the result of `inspect` instead
+by adding the `+` flag.
 
 {% highlight c %}
 {% include c/printf.h %}
 {% endhighlight %}
 
 This custom specifier should work for any `printf`-like function in the API.
+`PRIsVALUE` is defined to some variant of the `%i` conversion specifier, so when
+printing `int`s you should probably stick to `%d` just to be safe.
 
 #### Symbol ####
 
@@ -873,8 +878,9 @@ elsewhere that wraps the call to the useful function.
 [^undef]: There's also `Qundef` representing an undefined value, but
           this has no Ruby equivalent and is [rarely](#handling-blocks) used.
 
-[^wrap]: There's also `rb_eval_string_wrap()` but I'm not entirely sure what the
-         use-case is for it.
+[^wrap]: There's also `rb_eval_string_wrap()` but the Ruby source never uses it
+         and in all of my tests it behaves exactly the same as
+         `rb_eval_string_protect()`.
 
 [^chr]: There is a `CHR2FIX()` macro, but in my tests this sometimes gave
         unexpected results. `LONG2FIX()` should work.
