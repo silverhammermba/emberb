@@ -300,6 +300,30 @@ Functions are generally named like `rb_(class)_(method)` and take at least one
 `VALUE` argument (the receiver). E.g. `rb_ary_pop()` for `Array#pop`,
 `rb_obj_dup` for `Object#dup`, etc.
 
+## Require ##
+
+The API can also load some Ruby code from a script. There's an equivalent to
+`require`:
+
+{% highlight c %}
+{% include c/require.h %}
+{% endhighlight %}
+
+As with `require`, these could raise exceptions. Read the [next
+section](#exceptions) for how to handle them.
+
+There are also functions for `load` if you want to load a script multiple times:
+
+{% highlight c %}
+{% include c/load.h %}
+{% endhighlight %}
+
+Just like [`load` in Ruby][rbload], these functions can wrap the loaded code in
+an anonymous module to protect the global namespace. Just pass a nonzero value
+for the second argument.
+
+[rbload]: http://www.ruby-doc.org/core-1.8.6/Kernel.html#method-i-load
+
 ## Exceptions ##
 
 If you've been playing around with the API you've almost certainly run into
@@ -878,9 +902,8 @@ elsewhere that wraps the call to the useful function.
 [^undef]: There's also `Qundef` representing an undefined value, but
           this has no Ruby equivalent and is [rarely](#handling-blocks) used.
 
-[^wrap]: There's also `rb_eval_string_wrap()` but the Ruby source never uses it
-         and in all of my tests it behaves exactly the same as
-         `rb_eval_string_protect()`.
+[^wrap]: There's also `rb_eval_string_wrap()` which _should_ be useful, but is
+         actually the same as `rb_eval_string_protect()` due to a [bug].
 
 [^chr]: There is a `CHR2FIX()` macro, but in my tests this sometimes gave
         unexpected results. `LONG2FIX()` should work.
@@ -920,3 +943,5 @@ elsewhere that wraps the call to the useful function.
           sure when it is needed.
 
 [^tdata]: Or it could return `T_DATA` if the object [wraps C data](#data).
+
+[bug]: https://bugs.ruby-lang.org/issues/10466

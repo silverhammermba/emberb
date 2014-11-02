@@ -88,7 +88,7 @@ yourself](../c#rescue), or just pass `state` to `ruby_cleanup()` and it will
 print an appropriate error message.
 
 Ruby currently doesn't support any other way of compiling and running code
-separately.
+separately[^load].
 
 ## Success ##
 
@@ -102,3 +102,6 @@ Now you're ready to interact with Ruby! Go back to the [C API](../c).
 [^opt]: In my tests I couldn't get flags like `-w` and `-v` to do anything. This
         could be related to `ruby_prog_init()`. And really it should be possible
 		to do this without parsing command line options.
+
+[^load]: It looks like the function `rb_load_file()` should do this, but I
+         haven't had any luck getting it to work.
