@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <math.h>
 
 #include <SDL2/SDL.h>
 #include <ruby.h>
@@ -22,8 +23,8 @@ time_t ai_load_time;
 /* for position and direction */
 struct vec2
 {
-	int x;
-	int y;
+	float x;
+	float y;
 };
 
 /* for the player and their opponent */
@@ -127,8 +128,8 @@ void ai_think(struct actor* act, VALUE ai_v, VALUE player_v)
 	/* indicate that AI isn't running */
 	if (!ai_loaded || ai_error)
 	{
-		act->dir.x = 0;
-		act->dir.y = 0;
+		act->dir.x = 0.f;
+		act->dir.y = 0.f;
 		act->color.a = 127;
 		return;
 	}
@@ -143,20 +144,21 @@ void ai_think(struct actor* act, VALUE ai_v, VALUE player_v)
 /* move actor after ms time has elapsed */
 void step_actor(struct actor* act, unsigned int ms)
 {
-	float norm = 1.f;
-	if (act->dir.x != 0 && act->dir.y != 0)
-		norm = 0.70710678118654752440f; /* 1/sqrt(2) */
+	float norm = sqrtf(act->dir.x * act->dir.x + act->dir.y * act->dir.y);
+	if (norm == 0.f)
+		return;
+	norm = 1.f / norm;
 
-	act->pos.x += (int)(act->dir.x * act->speed * (float)ms * norm);
-	act->pos.y += (int)(act->dir.y * act->speed * (float)ms * norm);
+	act->pos.x += act->dir.x * act->speed * (float)ms * norm;
+	act->pos.y += act->dir.y * act->speed * (float)ms * norm;
 
 	// bound to screen
-	if (act->pos.x < 0)
-		act->pos.x = 0;
+	if (act->pos.x < 0.f)
+		act->pos.x = 0.f;
 	else if (act->pos.x > win_width - actor_size)
 		act->pos.x = win_width - actor_size;
-	if (act->pos.y < 0)
-		act->pos.y = 0;
+	if (act->pos.y < 0.f)
+		act->pos.y = 0.f;
 	else if (act->pos.y > win_height - actor_size)
 		act->pos.y = win_height - actor_size;
 }
@@ -182,7 +184,7 @@ VALUE actor_m_pos(VALUE self)
 	struct actor* data;
 	Data_Get_Struct(self, struct actor, data);
 
-	return rb_ary_new_from_args(2, INT2NUM(data->pos.x), INT2NUM(data->pos.y));
+	return rb_ary_new_from_args(2, DBL2NUM(data->pos.x), DBL2NUM(data->pos.y));
 }
 
 /* Actor#pos - returns last movement direction x, y. each is in the range (-1..1) */
@@ -191,26 +193,17 @@ VALUE actor_m_dir(VALUE self)
 	struct actor* data;
 	Data_Get_Struct(self, struct actor, data);
 
-	return rb_ary_new_from_args(2, INT2NUM(data->dir.x), INT2NUM(data->dir.y));
+	return rb_ary_new_from_args(2, DBL2NUM(data->dir.x), DBL2NUM(data->dir.y));
 }
 
 /* Actor#move - set next movement direction. x, y as in Actor#pos */
 VALUE actor_m_move(VALUE self, VALUE x, VALUE y)
 {
-	Check_Type(x, T_FIXNUM);
-	Check_Type(y, T_FIXNUM);
+	Check_Type(x, T_FLOAT);
+	Check_Type(y, T_FLOAT);
 
-	int nx = FIX2INT(x);
-	int ny = FIX2INT(y);
-
-	if (nx < -1)
-		nx = -1;
-	else if (nx > 1)
-		nx = 1;
-	if (ny < -1)
-		ny = -1;
-	else if (ny > 1)
-		ny = 1;
+	float nx = NUM2DBL(x);
+	float ny = NUM2DBL(y);
 
 	struct actor* data;
 	Data_Get_Struct(self, struct actor, data);
@@ -243,7 +236,7 @@ int main(int argc, char** argv)
 
 	/*
 	 * Notice that even though Actor wraps C data, we didn't define an
-	 * allocation or free function. That's because we're going to define all
+	 * allocation or free function. That's because we're going to create all
 	 * the actors in C and expose them to Ruby. However we should make sure
 	 * that Ruby can't create new Actors, because they'll contain invalid data
 	 * pointers
@@ -279,15 +272,15 @@ int main(int argc, char** argv)
 
 	/* create actors */
 	struct actor player = {
-		.pos = { .x = win_width / 2 + 100 - actor_size / 2, .y = win_height / 2 - actor_size / 2 },
-		.dir = { .x = 0, .y = 0 },
+		.pos = { .x = win_width / 2.f + 100.f - actor_size / 2.f, .y = win_height / 2.f - actor_size / 2.f },
+		.dir = { .x = 0.f, .y = 0.f },
 		.speed = 0.5f,
 		.color = { .r = 0, .g = 0, .b = 255, .a = 255 }
 	};
 	struct actor ai = {
-		.pos = { .x = win_width / 2 - 100 - actor_size / 2, .y = win_height / 2 - actor_size / 2 },
-		.dir = { .x = 0, .y = 0 },
-		.speed = 0.6f,
+		.pos = { .x = win_width / 2.f - 100.f - actor_size / 2.f, .y = win_height / 2.f - actor_size / 2.f },
+		.dir = { .x = 0.f, .y = 0.f },
+		.speed = 0.55f,
 		.color = { .r = 255, .g = 0, .b = 0, .a = 255 }
 	};
 
@@ -299,8 +292,7 @@ int main(int argc, char** argv)
 	rb_undef_method(rb_singleton_class(player_v), "move");
 
 	/* set up timing */
-	unsigned int frame_step = 16;
-	unsigned int ai_step = 33;
+	unsigned int ai_step = 33; /* run AI at 30fps */
 	unsigned int last_time = SDL_GetTicks();
 	unsigned int now;
 	unsigned int frame_time;
@@ -320,8 +312,8 @@ int main(int argc, char** argv)
 	{
 		/* update timers */
 		now = SDL_GetTicks();
-		frame_time += now - last_time;
-		ai_time += now - last_time;
+		frame_time = now - last_time;
+		ai_time += frame_time;
 		last_time = now;
 
 		/* event handling */
@@ -342,43 +334,30 @@ int main(int argc, char** argv)
 		}
 
 		/* player movement */
-		player.dir.x = 0;
-		player.dir.y = 0;
+		player.dir.x = 0.f;
+		player.dir.y = 0.f;
 
 		if (keyboard[SDL_SCANCODE_UP])
-			player.dir.y -= 1;
+			player.dir.y -= 1.f;
 		if (keyboard[SDL_SCANCODE_DOWN])
-			player.dir.y += 1;
+			player.dir.y += 1.f;
 		if (keyboard[SDL_SCANCODE_LEFT])
-			player.dir.x -= 1;
+			player.dir.x -= 1.f;
 		if (keyboard[SDL_SCANCODE_RIGHT])
-			player.dir.x += 1;
-
-		/* do we need to check for a new AI script? */
-		bool ai_check_reload = true;
+			player.dir.x += 1.f;
 
 		/* AI movement */
-		while (ai_time >= ai_step)
+		if (ai_time >= ai_step)
 		{
-			if (ai_check_reload)
-			{
-				update_ai(&ai);
-				ai_check_reload = false;
-			}
-
+			update_ai(&ai);
 			ai_think(&ai, ai_v, player_v);
 
-			ai_time -= ai_step;
+			ai_time %= ai_step;
 		}
 
 		/* game step */
-		while (frame_time >= frame_step)
-		{
-			step_actor(&ai, frame_step);
-			step_actor(&player, frame_step);
-
-			frame_time -= frame_step;
-		}
+		step_actor(&ai, frame_time);
+		step_actor(&player, frame_time);
 
 		/* render */
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
