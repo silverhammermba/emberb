@@ -156,7 +156,7 @@ void step_actor(struct actor* act, unsigned int ms)
 	act->pos.x += act->dir.x * act->speed * (float)ms * norm;
 	act->pos.y += act->dir.y * act->speed * (float)ms * norm;
 
-	// bound to screen
+	// clamp to screen
 	if (act->pos.x < 0.f)
 		act->pos.x = 0.f;
 	else if (act->pos.x > win_width - actor_size)
