@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -45,7 +46,7 @@ void handle_ruby_error()
 }
 
 /* try to (re)load AI script */
-void update_ai()
+void update_ai(struct actor* act)
 {
 	/* open script */
 	FILE* script = fopen(ai_script, "rb");
@@ -78,6 +79,8 @@ void update_ai()
 
 	ai_load_time = script_stat.st_mtime;
 
+	fprintf(stderr, "Loading AI script...\n");
+
 	/* read sript */
 	char* buffer = malloc(script_stat.st_size + 1);
 	if (!buffer)
@@ -89,6 +92,7 @@ void update_ai()
 	buffer[script_stat.st_size] = '\0';
 
 	ai_error = false;
+	act->color.a = 255;
 
 	/* run script */
 	int state;
@@ -114,10 +118,7 @@ void ai_think(struct actor* act)
 	{
 		act->dir.x = 0;
 		act->dir.y = 0;
-		act->color.r = 0;
-		act->color.g = 0;
-		act->color.b = 0;
-		act->color.a = 0;
+		act->color.a = 127;
 		return;
 	}
 
@@ -193,6 +194,7 @@ int main(int argc, char** argv)
 		fprintf(stderr, "SDL_CreateRenderer failed: %s\n", SDL_GetError());
 		return 1;
 	}
+	SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
 	/* create actors */
 	struct actor player = {
@@ -216,7 +218,7 @@ int main(int argc, char** argv)
 	unsigned int frame_time;
 	unsigned int ai_time;
 
-	update_ai();
+	update_ai(&enemy);
 	ai_think(&enemy);
 
 	const Uint8* keyboard = SDL_GetKeyboardState(NULL);
@@ -270,7 +272,7 @@ int main(int argc, char** argv)
 		{
 			if (ai_check_reload)
 			{
-				update_ai();
+				update_ai(&enemy);
 				ai_check_reload = false;
 			}
 
