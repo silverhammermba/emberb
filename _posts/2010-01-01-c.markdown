@@ -904,8 +904,8 @@ elsewhere that wraps the call to the useful function.
 [^int]: There is also the function `rb_thread_call_without_gvl2()`. The
         documentation in `thread.c` says that if "[it] detects interrupt, it
         returns immediately." but I'm not sure what this means. If the
-        unblocking function doesn't kill the thread, it still has to wait for
-        the thread to finish on its own before returning.
+        unblocking function doesn't kill the thread, it still waits for the
+        thread to finish on its own before returning.
 
 [^ubf]: You can also use `RUBY_UBF_PROCESS`, but this seems to be a leftover
         from deprecated code and has the exact same effect.

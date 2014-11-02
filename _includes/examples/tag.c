@@ -156,7 +156,7 @@ void step_actor(struct actor* act, unsigned int ms)
 	act->pos.x += act->dir.x * act->speed * (float)ms * norm;
 	act->pos.y += act->dir.y * act->speed * (float)ms * norm;
 
-	// clamp to screen
+	/* clamp to screen */
 	if (act->pos.x < 0.f)
 		act->pos.x = 0.f;
 	else if (act->pos.x > win_width - actor_size)
@@ -323,7 +323,7 @@ int main(int argc, char** argv)
 		/* event handling */
 		while (SDL_PollEvent(&event))
 		{
-			switch(event.type)
+			switch (event.type)
 			{
 				case SDL_QUIT:
 					running = false;

@@ -18,9 +18,9 @@ The Ruby script can look something like this:
 {% include examples/ai.rb %}
 {% endhighlight %}
 
-The C code uses SDL2 for graphics and input and uses `stat()` to hot-reload the
-AI script whenever the file is changed (this may not be very portable, sorry!).
-Here's the C code:
+The C code uses SDL2 for graphics and input and uses `stat()` (which may not be
+very portable) to hot-reload the AI script whenever the file is changed . Here's
+the C code:
 
 {% highlight c %}
 {% include examples/embed.c %}
