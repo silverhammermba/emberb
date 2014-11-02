@@ -220,7 +220,7 @@ VALUE actor_m_move(VALUE self, VALUE x, VALUE y)
 
 int main(int argc, char** argv)
 {
-	/* start Ruby */
+	/* start Ruby TODO is this redundant? */
 	if (ruby_setup())
 	{
 		fprintf(stderr, "Failed to init Ruby VM\n");

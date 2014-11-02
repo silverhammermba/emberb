@@ -1,0 +1,37 @@
+---
+layout: chapter
+title: Examples
+---
+
+## Running Ruby in C ##
+
+This example is a fun little game of tag. In the game there are two squares: the
+blue square is controlled using the arrow keys on the keyboard while the red
+square is controlled by a Ruby script. To make this work, we'll use the C API to
+define a little Ruby API that the script can access, and every couple of frames
+we'll call a method defined in the Ruby script and pass objects encapsulating
+the data for the two squares.
+
+The Ruby script can look something like this:
+
+{% highlight ruby %}
+{% include examples/ai.rb %}
+{% endhighlight %}
+
+The C code uses SDL2 for graphics and input and uses `stat()` to hot-reload the
+AI script whenever the file is changed (this may not be very portable, sorry!).
+Here's the C code:
+
+{% highlight c %}
+{% include examples/embed.c %}
+{% endhighlight %}
+
+The Makefile is nothing special:
+
+{% highlight make %}
+{% include examples/Makefile %}
+{% endhighlight %}
+
+## Running C in Ruby ##
+
+TODO
