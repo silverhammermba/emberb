@@ -1,10 +1,9 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
+#include <math.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <math.h>
 
 #include <SDL2/SDL.h>
 #include <ruby.h>
@@ -13,7 +12,7 @@
 const unsigned int win_width = 1024;
 const unsigned int win_height = 768;
 const unsigned int actor_size = 30;
-const char* ai_script = "ai.rb";
+const char* ai_script = "./ai.rb";
 
 /* globals */
 bool ai_loaded = false;
@@ -50,65 +49,35 @@ void handle_ruby_error()
 /* try to (re)load AI script */
 void update_ai(struct actor* act)
 {
-	/* open script */
-	FILE* script = fopen(ai_script, "rb");
-	if (!script)
-	{
-		if (ai_loaded)
-			fprintf(stderr, "Can't load AI script\n");
-		ai_loaded = false;
-		return;
-	}
-
 	/* get script modification time */
 	struct stat script_stat;
-	if (fstat(fileno(script), &script_stat))
+	if (stat(ai_script, &script_stat))
 	{
 		if (ai_loaded)
 			fprintf(stderr, "Can't stat AI script\n");
 		ai_loaded = false;
-		fclose(script);
 		return;
 	}
 
 	/* return if we've already loaded the script and it hasn't been updated */
 	if (ai_loaded)
 	{
-		if (ai_load_time >= script_stat.st_mtime)
-		{
-			fclose(script);
+		if (ai_load_time == script_stat.st_mtime)
 			return;
-		}
 	}
 	else
 		ai_loaded = true;
 
 	ai_load_time = script_stat.st_mtime;
 
-	fprintf(stderr, "Loading AI script...\n");
-
-	/* TODO there's probably a more proper way to load a script */
-
-	/* read script */
-	char* buffer = malloc(script_stat.st_size + 1);
-	if (!buffer)
-	{
-		fprintf(stderr, "malloc failure\n");
-		exit(1);
-	}
-	fread(buffer, 1, script_stat.st_size, script);
-	buffer[script_stat.st_size] = '\0';
-	fclose(script);
+	fprintf(stderr, "Loading AI...\n");
 
 	/* reset error state */
 	ai_error = false;
 	act->color.a = 255;
 
-	/* run script */
 	int state;
-	rb_eval_string_protect(buffer, &state);
-
-	free(buffer);
+	rb_load_protect(rb_str_new_cstr(ai_script), 0, &state);
 
 	if (state)
 		handle_ruby_error();

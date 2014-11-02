@@ -60,8 +60,8 @@ doesn't take a `state` argument and instead raises any exceptions normally. See
 [Exceptions](#exceptions) for how to handle both of these cases.
 
 Unlike `eval` in Ruby, these functions evaluate the string in an isolated
-binding &ndash; like when you `require` code. So local variables in the string
-will not be accessible from elsewhere and vice versa.
+binding &ndash; like when you `require` something. So local variables in the
+string will not be accessible from elsewhere and vice versa.
 
 However, like using `eval` in Ruby, using these functions is not a good
 practice. It's inefficient since the parser is invoked and it somewhat defeats
