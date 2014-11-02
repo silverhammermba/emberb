@@ -147,7 +147,11 @@ void step_actor(struct actor* act, unsigned int ms)
 	float norm = sqrtf(act->dir.x * act->dir.x + act->dir.y * act->dir.y);
 	if (norm == 0.f)
 		return;
-	norm = 1.f / norm;
+	/* clamp magnitude to 1 */
+	else if (norm > 1.f)
+		norm = 1.f / norm;
+	else
+		norm = 1.f;
 
 	act->pos.x += act->dir.x * act->speed * (float)ms * norm;
 	act->pos.y += act->dir.y * act->speed * (float)ms * norm;
