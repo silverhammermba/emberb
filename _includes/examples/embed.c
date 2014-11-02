@@ -1,13 +1,22 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 #include <SDL2/SDL.h>
 #include <ruby.h>
 
+/* constants */
 const unsigned int actor_size = 30;
-/* window dimensions */
 const unsigned int win_width = 1024;
 const unsigned int win_height = 768;
+const char ai_script[] = "ai.rb";
+
+/* globals */
+bool ai_loaded = false;
+bool ai_error = false;
+time_t ai_load_time;
 
 /* for position and direction */
 struct vec2
@@ -24,6 +33,92 @@ struct actor
 	float speed;
 	SDL_Color color;
 };
+
+/* try to (re)load AI script */
+void update_ai()
+{
+	/* open script */
+	FILE* script = fopen(ai_script, "rb");
+	if (!script)
+	{
+		ai_loaded = false;
+		return;
+	}
+
+	/* get script modification time */
+	struct stat script_stat;
+	if (fstat(fileno(script), &script_stat))
+	{
+		ai_loaded = false;
+		return;
+	}
+
+	/* return if we've already loaded the script and it hasn't been updated */
+	if (ai_loaded)
+	{
+		if (ai_load_time >= script_stat.st_mtime)
+			return;
+	}
+	else
+		ai_loaded = true;
+
+	ai_load_time = script_stat.st_mtime;
+
+	/* read sript */
+	char* buffer = malloc(script_stat.st_size);
+	if (!buffer)
+	{
+		fprintf(stderr, "malloc failure\n");
+		exit(1);
+	}
+	fread(buffer, 1, script_stat.st_size, script);
+
+	ai_error = false;
+
+	/* run script */
+	int state;
+	rb_eval_string_protect(buffer, &state);
+
+	free(buffer);
+
+	if (state)
+		ai_error = true;
+}
+
+VALUE think_wrapper(VALUE unused)
+{
+	rb_funcall(rb_mKernel, rb_intern("think"), 0);
+
+	return Qundef;
+}
+
+void ai_think(struct actor* act)
+{
+	/* indicate that AI isn't running */
+	if (!ai_loaded || ai_error)
+	{
+		act->dir.x = 0;
+		act->dir.y = 0;
+		act->color.r = 0;
+		act->color.g = 0;
+		act->color.b = 0;
+		act->color.a = 0;
+		return;
+	}
+
+	int state;
+	rb_protect(think_wrapper, Qundef, &state);
+
+	if (state)
+	{
+		ai_error = true;
+
+		VALUE exception = rb_errinfo();
+		rb_set_errinfo(Qnil);
+
+		rb_warn("AI script error: %"PRIsVALUE"\n", exception);
+	}
+}
 
 /* move actor after ms time has elapsed */
 void step_actor(struct actor* act, unsigned int ms)
@@ -106,10 +201,15 @@ int main(int argc, char** argv)
 	};
 
 	/* set up timing */
-	unsigned int time_step = 16;
+	unsigned int frame_step = 16;
+	unsigned int ai_step = 33;
 	unsigned int last_time = SDL_GetTicks();
 	unsigned int now;
 	unsigned int frame_time;
+	unsigned int ai_time;
+
+	update_ai();
+	ai_think(&enemy);
 
 	const Uint8* keyboard = SDL_GetKeyboardState(NULL);
 
@@ -121,6 +221,7 @@ int main(int argc, char** argv)
 		/* update timers */
 		now = SDL_GetTicks();
 		frame_time += now - last_time;
+		ai_time += now - last_time;
 		last_time = now;
 
 		/* event handling */
@@ -153,13 +254,30 @@ int main(int argc, char** argv)
 		if (keyboard[SDL_SCANCODE_RIGHT])
 			player.dir.x += 1;
 
-		/* game step */
-		while (frame_time >= time_step)
-		{
-			step_actor(&enemy, time_step);
-			step_actor(&player, time_step);
+		/* do we need to check for a new AI script? */
+		bool ai_check_reload = true;
 
-			frame_time -= time_step;
+		/* AI */
+		while (ai_time >= ai_step)
+		{
+			if (ai_check_reload)
+			{
+				update_ai();
+				ai_check_reload = false;
+			}
+
+			ai_think(&enemy);
+
+			ai_time -= ai_step;
+		}
+
+		/* game step */
+		while (frame_time >= frame_step)
+		{
+			step_actor(&enemy, frame_step);
+			step_actor(&player, frame_step);
+
+			frame_time -= frame_step;
 		}
 
 		/* render */
