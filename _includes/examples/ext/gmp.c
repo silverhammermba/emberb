@@ -95,9 +95,9 @@ VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 
 				return self;
 			}
-			/* intentionally no break */
+			/* break intentionally omitted */
 		case T_OBJECT:
-			rb_raise(rb_eTypeError, "%"PRIsVALUE" is not an integer type", val);
+			rb_raise(rb_eTypeError, "%+"PRIsVALUE" is not an integer type", val);
 			break;
 		default:
 			/* shouldn't get here */
@@ -105,10 +105,15 @@ VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 			break;
 	}
 
-	/* assign to data */
+	/* assign */
 	char* cstr = StringValueCStr(str);
 	if (mpz_set_str(*data, cstr, base))
-		rb_raise(rb_eArgError, "invalid base %d number: %"PRIsVALUE, base, val);
+	{
+		if (base == 0)
+			rb_raise(rb_eArgError, "invalid number: %"PRIsVALUE, val);
+		else
+			rb_raise(rb_eArgError, "invalid base %d number: %"PRIsVALUE, base, val);
+	}
 
 	return self;
 }
