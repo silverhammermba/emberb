@@ -3,15 +3,9 @@
 #include <string.h>
 
 /*
- * unwrapping VALUEs to get the C data inside is incredibly common when writing
- * a C extension. It's not that hard, but it gets tedious.
- *
- * UNWRAP(x, y) expands to
- *
- * mpz_t* y;
- * Data_Get_Struct(x, mpz_t, y);
- *
- * So you can go straight from a VALUE to the underlying data
+ * we're going to be unwrapping VALUEs to get the C data A LOT.
+ * It's not that hard, but it gets tedious. This lets us go
+ * straight from a VALUE to the underlying data
  */
 #define UNWRAP(val, data) \
 	mpz_t* data;\
@@ -75,7 +69,6 @@ VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 			rb_raise(rb_eRangeError, "base must be 0 or in (2..62)");
 	}
 
-	/* unwrap */
 	UNWRAP(self, data);
 
 	VALUE str;

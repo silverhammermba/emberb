@@ -43,7 +43,7 @@ types. If you want a _really_ full example, check out the [GMP gem][gem].
 [gmp]: https://gmplib.org/
 [gem]: https://github.com/srawlins/gmp
 
-Pretty much everything is in `gmp.c`:
+Everything is in `gmp.c` where we define our `GMP::Integer` class:
 
 {% highlight c %}
 {% include examples/ext/gmp.c %}
