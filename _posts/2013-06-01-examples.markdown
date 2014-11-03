@@ -55,6 +55,12 @@ The `extconf.rb` is really simple.
 {% include examples/ext/extconf.rb %}
 {% endhighlight %}
 
+And now you can finally find out what your name means in base 62:
+
+{% highlight ruby %}
+{% include examples/gmp_ex.rb %}
+{% endhighlight %}
+
 For this example I tried to do everything in C, but practically that isn't
 necessary (or desirable). If one of your C methods just calls a bunch of API
 functions (like `to_i` and `==` in the example), you're probably only saving
