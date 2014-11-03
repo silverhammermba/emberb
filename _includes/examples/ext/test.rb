@@ -17,5 +17,31 @@ describe GMP::Integer do
       x = '87678392019238123109238'
       GMP::Integer.new(x).to_s.must_equal x.to_s
     end
+
+    it "must raise if the base is invalid" do
+      # only accept base with strings
+      proc { GMP::Integer.new(3, 10) }.must_raise TypeError
+      # only accept fixnum bases
+      proc { GMP::Integer.new('3', 1.5) }.must_raise TypeError
+      # wrong base range
+      proc { GMP::Integer.new('3', 64) }.must_raise RangeError
+      # invalid base for string
+      proc { GMP::Integer.new('3', 2) }.must_raise ArgumentError
+      # good
+      GMP::Integer.new('3', 9)
+    end
+  end
+
+  describe "when converting to String" do
+    it "must raise if the base is invalid" do
+      x = GMP::Integer.new(3)
+
+      # base must be Fixnum
+      proc { x.to_s(1.5) }.must_raise TypeError
+      # wrong base range
+      proc { x.to_s(64) }.must_raise RangeError
+      # good
+      x.to_s(2)
+    end
   end
 end
