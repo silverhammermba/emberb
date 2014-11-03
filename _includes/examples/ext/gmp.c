@@ -2,6 +2,29 @@
 #include <gmp.h>
 #include <string.h>
 
+/*
+ * unwrapping VALUEs to get the C data inside is incredibly common when writing
+ * a C extension. It's not that hard, but it gets tedious.
+ *
+ * UNWRAP(x, y) expands to
+ *
+ * mpz_t* y;
+ * Data_Get_Struct(x, mpz_t, y);
+ *
+ * So you can go straight from a VALUE to the underlying data
+ */
+#define UNWRAP(val, data) \
+	mpz_t* data;\
+	Data_Get_Struct(val, mpz_t, data);
+
+/*
+ * we're also going to be pretty strict about accepting only
+ * objects of our GMP::Integer type, so this will be a frequent test
+ */
+#define CHECK_MPZ(val) \
+	if (CLASS_OF(val) != cInteger)\
+		rb_raise(rb_eTypeError, "%+"PRIsVALUE" is not a %"PRIsVALUE, val, cInteger);
+
 /* it's nice to have these as globals for easy access in methods */
 VALUE mGMP;
 VALUE cInteger;
@@ -22,18 +45,6 @@ VALUE integer_c_alloc(VALUE self)
 	mpz_init(*data);
 
 	return Data_Wrap_Struct(self, NULL, integer_free, data);
-}
-
-/* construct a GMP::Integer from an mpz_t */
-VALUE integer_from_mpz(mpz_t x)
-{
-	VALUE val = integer_c_alloc(cInteger);
-
-	mpz_t* data;
-	Data_Get_Struct(val, mpz_t, data);
-	mpz_set(*data, x);
-
-	return val;
 }
 
 /* GMP::Integer#initialize
@@ -65,8 +76,7 @@ VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 	}
 
 	/* unwrap */
-	mpz_t* data;
-	Data_Get_Struct(self, mpz_t, data);
+	UNWRAP(self, data);
 
 	VALUE str;
 
@@ -88,8 +98,7 @@ VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 			/* copy another GMP::Integer */
 			if (CLASS_OF(val) == cInteger)
 			{
-				mpz_t* other;
-				Data_Get_Struct(val, mpz_t, other);
+				UNWRAP(val, other);
 
 				mpz_set(*data, *other);
 
@@ -139,9 +148,7 @@ VALUE integer_m_to_s(int argc, VALUE* argv, VALUE self)
 			rb_raise(rb_eRangeError, "base must be in (-36..-2) or (2..62)");
 	}
 
-	/* unwrap */
-	mpz_t* data;
-	Data_Get_Struct(self, mpz_t, data);
+	UNWRAP(self, data);
 
 	/* get C string from GMP */
 	char* cstr = malloc(mpz_sizeinbase(*data, base) + 2);
@@ -156,6 +163,65 @@ VALUE integer_m_to_s(int argc, VALUE* argv, VALUE self)
 	return str;
 }
 
+/* GMP::Integer#to_i */
+VALUE integer_m_to_i(VALUE self)
+{
+	/* safest and easiest way to convert, unfortunately */
+	return rb_funcall(integer_m_to_s(0, NULL, self), rb_intern("to_i"), 0);
+}
+
+/* GMP::Integer#<=> */
+VALUE integer_m_spaceship(VALUE self, VALUE x)
+{
+	CHECK_MPZ(x);
+
+	UNWRAP(self, data);
+	UNWRAP(x, other);
+
+	if (data == other)
+		return INT2FIX(0);
+
+	return INT2FIX(mpz_cmp(*data, *other));
+}
+
+/* GMP::Integer#== */
+VALUE integer_m_eq(VALUE self, VALUE x)
+{
+	if (CLASS_OF(x) == cInteger)
+		return integer_m_spaceship(self, x) == INT2FIX(0) ? Qtrue : Qfalse;
+
+	return rb_call_super(1, &x);
+}
+
+/* GMP::Integer#+ */
+VALUE integer_m_add(VALUE self, VALUE x)
+{
+	CHECK_MPZ(x);
+
+	UNWRAP(self, data);
+	UNWRAP(x, other);
+
+	VALUE result = integer_c_alloc(cInteger);
+	UNWRAP(result, res);
+
+	mpz_add(*res, *data, *other);
+
+	return result;
+}
+/* multiplication and subtraction would be defined nearly identically */
+
+VALUE integer_m_neg(VALUE self)
+{
+	UNWRAP(self, data);
+
+	VALUE result = integer_c_alloc(cInteger);
+	UNWRAP(result, res);
+
+	mpz_neg(*res, *data);
+
+	return result;
+}
+
 /* entry point */
 void Init_gmp()
 {
@@ -166,5 +232,11 @@ void Init_gmp()
 	rb_define_alloc_func(cInteger, integer_c_alloc);
 	rb_define_method(cInteger, "initialize", integer_m_initialize, -1);
 	rb_define_method(cInteger, "to_s", integer_m_to_s, -1);
+	rb_define_method(cInteger, "to_i", integer_m_to_i, 0);
+	rb_define_method(cInteger, "<=>", integer_m_spaceship, 1);
+	rb_define_method(cInteger, "==", integer_m_eq, 1);
+	rb_define_method(cInteger, "+", integer_m_add, 1);
+	rb_define_method(cInteger, "-@", integer_m_neg, 0);
+
 	rb_define_alias(cInteger, "inspect", "to_s");
 }
