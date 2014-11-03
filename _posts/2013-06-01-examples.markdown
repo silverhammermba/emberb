@@ -68,7 +68,7 @@ yourself a couple CPU cycles compared to implementing the method in Ruby. And of
 course that comes at the cost of needing to spend more time writing C and less
 time writing Ruby. &#9786;
 
-A common convetion when writing extensions is to only implement the "meat" of
+A common convention when writing extensions is to only implement the "meat" of
 the extension in C and to do everything else in a regular Ruby script that pulls
 in the compiled library. For example, we could have written a `gmp.rb` script to
 significantly simplify our extension:

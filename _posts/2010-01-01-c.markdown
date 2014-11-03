@@ -629,10 +629,11 @@ You might want to call `super` in your method.
 {% include c/super.h %}
 {% endhighlight %}
 
-Unlike in Ruby `rb_call_super()` will **not** implicty pass along the method
+Unlike in Ruby `rb_call_super()` will **not** implicitly pass along the method
 arguments to the super if you give it no arguments. You must explicitly pass the
-correct `argc` and `argv`. For that reason I recommend using the third (C array)
-style of method definition if you want to use `rb_call_super()`.
+correct `argc` and `argv` (it _does_ automatically pass `self`). For that reason
+I recommend using the third (C array) style of method definition if you want to
+use `rb_call_super()`.
 
 #### Definition ####
 
@@ -714,7 +715,7 @@ underlying data, and the pointer to assign the data to.
 This separation of allocation and initialization doesn't jive with [RAII][raii],
 so if you're using C++ you will probably want to use [placement new][place] when
 wrapping data. If you're having trouble splitting up allocation and
-initilization, you can just wrap your data in a `struct` and do the _actual_
+initialization, you can just wrap your data in a `struct` and do the _actual_
 allocation in `initialize`.
 
 [raii]: http://wikipedia.org/wiki/Resource_Acquisition_Is_Initialization
@@ -894,7 +895,7 @@ elsewhere that wraps the call to the useful function.
 
 ### Examples ###
 
-Head over to the [Exampels](../examples) page for short, compilable examples of
+Head over to the [Examples](../examples) page for short, compilable examples of
 these functions in use.
 
 ### Contribute ###

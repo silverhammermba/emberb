@@ -79,7 +79,7 @@ But of course that won't do anything without some C code to compile.
 
 ## Init ##
 
-In your C code, you'll want to include `ruby.h` to acess the API. Other than
+In your C code, you'll want to include `ruby.h` to access the API. Other than
 that the only requirement is to define a function for the Ruby VM to call when
 your library is `require`d. The name of the function is determined by the
 argument you passed to `create_makefile` in `extconf.rb`. We used "foobar" in
