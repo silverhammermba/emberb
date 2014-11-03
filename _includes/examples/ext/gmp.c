@@ -23,6 +23,7 @@
 VALUE mGMP;
 VALUE cInteger;
 
+/* function to free data wrapped in GMP::Integer */
 void integer_free(mpz_t* data)
 {
 	/* free memory allocated by GMP */
@@ -43,7 +44,7 @@ VALUE integer_c_alloc(VALUE self)
 
 /* GMP::Integer#initialize
  *
- * Converts first argument to an mpz_t.
+ * Sets internal mpz_t using first argument
  *
  * If the first argument is a String, you can supply a second Fixnum argument
  * as the base for interpreting the String. The default base of 0 means that
@@ -159,7 +160,7 @@ VALUE integer_m_to_s(int argc, VALUE* argv, VALUE self)
 /* GMP::Integer#to_i */
 VALUE integer_m_to_i(VALUE self)
 {
-	/* safest and easiest way to convert, unfortunately */
+	/* safest and easiest way to convert is to call to_s.to_i */
 	return rb_funcall(integer_m_to_s(0, NULL, self), rb_intern("to_i"), 0);
 }
 
@@ -171,6 +172,7 @@ VALUE integer_m_spaceship(VALUE self, VALUE x)
 	UNWRAP(self, data);
 	UNWRAP(x, other);
 
+	/* shortcut for identical objects */
 	if (data == other)
 		return INT2FIX(0);
 
@@ -180,6 +182,7 @@ VALUE integer_m_spaceship(VALUE self, VALUE x)
 /* GMP::Integer#== */
 VALUE integer_m_eq(VALUE self, VALUE x)
 {
+	/* for GMP::Integers, use <=> */
 	if (CLASS_OF(x) == cInteger)
 		return integer_m_spaceship(self, x) == INT2FIX(0) ? Qtrue : Qfalse;
 
@@ -194,6 +197,10 @@ VALUE integer_m_add(VALUE self, VALUE x)
 	UNWRAP(self, data);
 	UNWRAP(x, other);
 
+	/*
+	 * we need a new GMP::Integer to store the result, but there's no need
+	 * to actually use the `new` method
+	 */
 	VALUE result = integer_c_alloc(cInteger);
 	UNWRAP(result, res);
 
@@ -207,6 +214,7 @@ VALUE integer_m_neg(VALUE self)
 {
 	UNWRAP(self, data);
 
+	/* bypassing `new` as in the + method */
 	VALUE result = integer_c_alloc(cInteger);
 	UNWRAP(result, res);
 
