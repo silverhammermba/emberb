@@ -2,6 +2,10 @@
 #include <gmp.h>
 #include <string.h>
 
+/* it's nice to have these as globals for easy access in methods */
+VALUE mGMP;
+VALUE cInteger;
+
 void integer_free(mpz_t* data)
 {
 	/* free memory allocated by GMP */
@@ -20,10 +24,29 @@ VALUE integer_c_alloc(VALUE self)
 	return Data_Wrap_Struct(self, NULL, integer_free, data);
 }
 
-/* GMP::Integer#initialize */
+/* construct a GMP::Integer from an mpz_t */
+VALUE integer_from_mpz(mpz_t x)
+{
+	VALUE val = integer_c_alloc(cInteger);
+
+	mpz_t* data;
+	Data_Get_Struct(val, mpz_t, data);
+	mpz_set(*data, x);
+
+	return val;
+}
+
+/* GMP::Integer#initialize
+ *
+ * Converts first argument to an mpz_t.
+ *
+ * If the first argument is a String, you can supply a second Fixnum argument
+ * as the base for interpreting the String. The default base of 0 means that
+ * the base will be determined by the String's prefix.
+ */
 VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 {
-	int base = 10;
+	int base = 0;
 
 	/* check for optional base argument */
 	VALUE val;
@@ -37,8 +60,8 @@ VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 		base = FIX2INT(rbase);
 
 		/* GMP only accepts certain bases */
-		if (!(base >= 2 && base <= 62))
-			rb_raise(rb_eRangeError, "base must be in (2..62)");
+		if (!(base >= 2 && base <= 62) && base != 0)
+			rb_raise(rb_eRangeError, "base must be 0 or in (2..62)");
 	}
 
 	/* unwrap */
@@ -56,12 +79,23 @@ VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 		case T_BIGNUM:
 			/* this is the easiest way to safely convert */
 			str = rb_funcall(val, rb_intern("to_s"), 0);
+			base = 10;
 			break;
 		case T_STRING:
 			str = val;
 			break;
-		/* all other types */
 		case T_DATA:
+			/* copy another GMP::Integer */
+			if (CLASS_OF(val) == cInteger)
+			{
+				mpz_t* other;
+				Data_Get_Struct(val, mpz_t, other);
+
+				mpz_set(*data, *other);
+
+				return self;
+			}
+			/* intentionally no break */
 		case T_OBJECT:
 			rb_raise(rb_eTypeError, "%"PRIsVALUE" is not an integer type", val);
 			break;
@@ -79,7 +113,10 @@ VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 	return self;
 }
 
-/* GMP::Integer#to_s */
+/* GMP::Integer#to_s
+ *
+ * Accepts an optional Fixnum argument for the base of the String (default 10)
+ */
 VALUE integer_m_to_s(int argc, VALUE* argv, VALUE self)
 {
 	int base = 10;
@@ -117,11 +154,12 @@ VALUE integer_m_to_s(int argc, VALUE* argv, VALUE self)
 /* entry point */
 void Init_gmp()
 {
-	VALUE mGMP = rb_define_module("GMP");
+	mGMP = rb_define_module("GMP");
 
 	/* define GMP::Integer */
-	VALUE cInteger = rb_define_class_under(mGMP, "Integer", rb_cObject);
+	cInteger = rb_define_class_under(mGMP, "Integer", rb_cObject);
 	rb_define_alloc_func(cInteger, integer_c_alloc);
 	rb_define_method(cInteger, "initialize", integer_m_initialize, -1);
 	rb_define_method(cInteger, "to_s", integer_m_to_s, -1);
+	rb_define_alias(cInteger, "inspect", "to_s");
 }

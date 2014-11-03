@@ -13,6 +13,11 @@ describe GMP::Integer do
       GMP::Integer.new(x).to_s.must_equal x.to_s
     end
 
+    it "must accept a GMP::Integer" do
+      x = GMP::Integer.new(4)
+      GMP::Integer.new(x).to_s.must_equal x.to_s
+    end
+
     it "must accept a String" do
       x = '87678392019238123109238'
       GMP::Integer.new(x).to_s.must_equal x.to_s
