@@ -892,6 +892,20 @@ lots of really useful functions in there that _look_ like they should be in the
 API, but actually aren't. Though in most cases there should be an API function
 elsewhere that wraps the call to the useful function.
 
+### Examples ###
+
+Head over to the [Exampels](../examples) page for short, compilable examples of
+these functions in use.
+
+### Contribute ###
+
+Now that you've finished reading my guide, did you notice something significant
+that I left out? Did I make some stupid mistake? Check out the [source][gh] for
+this site on Github and you can report issues, submit pull requests, and
+download all of the code examples.
+
+[gh]: https://github.com/silverhammermba/emberb
+
 ## Footnotes ##
 
 [^intern]: Okay, that's a blatant lie. The API _totally_ lets you mess around
