@@ -34,4 +34,23 @@ The Makefile is nothing special:
 
 ## Running C in Ruby ##
 
-TODO
+This example is a Ruby C extension that wraps the [GMP][gmp] C library for
+arbitrary precision arithmetic. This is far from a complete example: it only
+wraps the integer functions, implements only the basic functionality of the
+library, and doesn't bother nicely integrating with Ruby's existing numeric
+types. If you want a _really_ full example, check out the [GMP gem][gem].
+
+[gmp]: https://gmplib.org/
+[gem]: https://github.com/srawlins/gmp
+
+Pretty much everything is in `gmp.c`:
+
+{% highlight c %}
+{% include examples/ext/gmp.c %}
+{% endhighlight %}
+
+The `extconf.rb` is really simple.
+
+{% highlight ruby %}
+{% include examples/ext/extconf.rb %}
+{% endhighlight %}
