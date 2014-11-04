@@ -1,5 +1,6 @@
 ---
 layout: default
+title: The Definitive Guide to Ruby's C API
 ---
 
 <div class="container">
