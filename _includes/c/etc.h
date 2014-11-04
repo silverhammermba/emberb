@@ -20,6 +20,6 @@ rb_define_attr(klass, "x", 0, 1);
 /* klass.attr_accessor :x */
 rb_define_attr(klass, "x", 1, 1);
 
-/* obj.singleton_class; handy in combination with the other functions */
+/* obj.singleton_class # handy in combination with the other functions */
 VALUE singleton;
-singelton = rb_singleton_class(obj);
+singleton = rb_singleton_class(obj);

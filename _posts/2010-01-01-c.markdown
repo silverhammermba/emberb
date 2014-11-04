@@ -215,8 +215,9 @@ by adding the `+` flag.
 {% endhighlight %}
 
 This custom specifier should work for any `printf`-like function in the API.
-`PRIsVALUE` is defined to some variant of the `%i` conversion specifier, so when
-printing `int`s you should probably stick to `%d` just to be safe.
+`PRIsVALUE` works by hijacking the `i` conversion specifier, so when printing
+an `int` you should use `d` to ensure that Ruby doesn't think it's actually a
+`VALUE`.
 
 #### Symbol ####
 
@@ -242,7 +243,7 @@ up yourself in the Ruby headers).
 This section contains API functions for directly calling Ruby methods. You
 should prefer these functions to `rb_eval_string()` and the like whenever
 possible. They are faster since they skip the parser and allow for some
-compile-time checking.
+compile-time checks.
 
 The easiest way to send an object a method looks like this:
 
@@ -415,8 +416,8 @@ all exceptions:
 Like `rb_rescue2()`, the first two arguments are for calling the function to
 protect. However, like `rb_eval_string_protect()`, if an exception is raised
 it returns `Qnil` and sets `state` to some nonzero value. If you want to
-re-raise the exception, pass `state` to `rb_jump_tag()` (this works for the
-state from `rb_eval_string_protect()` too).
+re-raise the exception, pass `state` to `rb_jump_tag()` (this also works for the
+state from the other `*_protect()` functions).
 
 ### Ensure ###
 
@@ -474,14 +475,14 @@ will be automatically synchronized with one.
 
 The `VALUE` should be initialized before you create the global in Ruby and it
 should be global in C as well &ndash; you don't want it to go out of scope while
-Ruby is using it! For `rb_define_hooked_variable()`, you can pass `0` for the
+Ruby is using it! For `rb_define_hooked_variable()`, you can pass `NULL` for the
 getter/setter if you want to synchronize normally for that operation. Or you can
 throw out `global` entirely with `rb_define_virtual_variable()` though of course
 the getter and setter _must_ be defined in that case.
 
-If you ever create a global `VALUE` in C which is _not_ exposed to Ruby (using
-one of the previous functions), you must tell the garbage collector about it to
-prevent it from being prematurely cleaned up:
+If you ever create a global `VALUE` in C which is _not_ exposed to Ruby, you
+must tell the garbage collector about it to prevent it from being prematurely
+cleaned up:
 
 {% highlight c %}
 {% include c/gc.h %}
@@ -504,7 +505,7 @@ course the first argument should be a class object.
 
 ### Constants ####
 
-You define constants similarly, but with the module to define them under:
+Constants are defined similarly, but with the module to define them under:
 
 {% highlight c %}
 {% include c/constant.h %}
@@ -547,7 +548,7 @@ other arguments:
 {% endhighlight %}
 
 So really the API only lets you define two types of methods: ones that take a
-fixed number of arguments, and ones that slurp up all their arguments.  What
+fixed number of arguments, and ones that slurp up all of their arguments.  What
 about all of Ruby's fancy argument features? Where are optional arguments,
 options hashes, blocks, and all the mixtures of those?
 
@@ -581,7 +582,7 @@ describes a method with one mandatory argument and a splat. If you want one
 _optional_ argument and a splat you must specify `01*`.  Following the format
 string, you must pass a `VALUE*` for each _Ruby_ argument.  The number of
 pointers passed should equal the "total" of the six sections, though you can
-pass `0` for an argument you don't care about. For example the format string
+pass `NULL` for an argument you don't care about. For example the format string
 `21*&` should have 5 `VALUE*`s passed (2 mandatory, 1 optional, 1 splatted, 1
 block).
 
@@ -689,9 +690,8 @@ using `new`?  Basically this:
 {% endhighlight %}
 
 Before calling the _instance method_ `initialize` that we know so well, `new`
-first calls the _class method_ `allocate` in order to actually create the
-object. That is the method you'll need to define if you want your objects to
-wrap C data.
+first calls the _class method_ `allocate` to actually create the object. That is
+the method you'll need to define if you want your objects to wrap C data.
 
 {% highlight c %}
 {% include c/wrap.h %}
@@ -748,8 +748,8 @@ C `struct` which contains a Ruby `VALUE` &ndash; which the garbage collector is
 responsible for cleaning up. Since the garbage collector is only aware of
 `VALUE`s referenced _by Ruby_ (not by C pointers), it won't be able to mark the
 referenced `VALUE` as active. The result is that as soon as the garbage
-collector needs to free up memory, your C data is going to end up with an
-invalid reference to a Ruby object.
+collector needs to free up some memory, your C data is going to end up with a
+reference to a nonexistent Ruby object.
 
 In the following example, we'll wrap a C `struct` which contains a `VALUE`. The
 mark function has the same signature as the free function and all it has to do
@@ -762,7 +762,7 @@ is mark any `VALUE`s in the `struct`:
 If your `struct` contains a pointer to a C array of `VALUE`s, you can instead
 use `rb_gc_mark_locations()` which takes two arguments: the pointers to the
 start and end of the array (the end being equal to the starting pointer plus the
-array length)[^maybe].
+array length).[^maybe]
 
 ## Threading ##
 
@@ -836,7 +836,7 @@ perform any necessary cleanup before returning early.
 Alternatively, if the interrupted function doesn't _need_ to perform any special
 cleanup, you can use the built in unblocking function `RUBY_UBF_IO`[^ubf]
 (which ignores the unblocking argument). That simply forwards the interrupt to
-the running thread[^int].
+the running thread.[^int]
 
 If you go through all of that effort to release the GVL only to find that you
 need to make an API call in your unlocked thread, there's a function to
@@ -888,9 +888,9 @@ next stop should be the Ruby source code.
 
     $ git clone https://github.com/ruby/ruby.git
 
-When reading through the source code, always keep the header at hand: there are
+When reading through the source code, always keep the headers at hand: there are
 lots of really useful functions in there that _look_ like they should be in the
-API, but actually aren't. Though in most cases there should be an API function
+API, but actually aren't. In most cases there should be an API function
 elsewhere that wraps the call to the useful function.
 
 ### Examples ###

@@ -4,7 +4,7 @@ VALUE my_method(VALUE self, VALUE arg1, VALUE arg2)
 	/* ... */
 }
 
-/* or, pass all args as a Ruby Array */
+/* or, slurp all args into a Ruby Array */
 VALUE my_method(VALUE self, VALUE args)
 {
 	/* ... */
