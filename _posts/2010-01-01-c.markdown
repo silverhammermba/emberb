@@ -114,8 +114,8 @@ API so you don't need an API call to access them. Modules are prefixed with
 `rb_m` e.g. `rb_mKernel`; classes are prefixed with `rb_c` e.g.  `rb_cObject`;
 subclasses of `Exception` are prefixed with `rb_e` e.g.  `rb_eRuntimeError`; and
 the standard IO streams are prefixed with `rb_` e.g.  `rb_stderr`. `nil`,
-`false`, and `true` are prefixed with `Q` e.g. `Qnil`. As a convenience,
-`Qfalse` is also false in C (`0`).[^undef]
+`false`, and `true` are prefixed with `Q` e.g. `Qnil`.[^undef] As a convenience,
+`Qfalse` is also false in C (`0`).
 
 ### Translation ###
 
