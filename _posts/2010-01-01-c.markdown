@@ -104,7 +104,8 @@ switch statement:
 {% include c/checktype.h %}
 {% endhighlight %}
 
-If you instead want the `VALUE` of the class object, use the `CLASS_OF()` macro.
+[^types]If you instead want the `VALUE` of the class object, use the
+`CLASS_OF()` macro.
 
 ### Constants ###
 
@@ -958,5 +959,7 @@ download all of the code examples.
           sure when it is needed.
 
 [^tdata]: Or it could return `T_DATA` if the object [wraps C data](#data).
+
+[^types]: I really don't know why `RB_TYPE_P()` is a thing.
 
 [bug]: https://bugs.ruby-lang.org/issues/10466
