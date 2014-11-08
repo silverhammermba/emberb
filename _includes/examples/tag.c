@@ -38,15 +38,27 @@ struct ai_actor
 	struct actor* actor;
 };
 
-/* for handling exceptions from protect calls */
+/* set AI error state and possibly print exception */
 void ai_error(struct ai_actor* ai)
 {
 	ai->error = true;
 
+	ai->actor->dir.x = 0.f;
+	ai->actor->dir.y = 0.f;
+	ai->actor->color.a = 127;
+
+	/* print exception */
 	VALUE exception = rb_errinfo();
 	rb_set_errinfo(Qnil);
 
-	rb_warn("AI script error: %"PRIsVALUE"", exception);
+	if (RTEST(exception)) rb_warn("AI script error: %"PRIsVALUE"", exception);
+}
+
+/* clear AI error state */
+void ai_reset(struct ai_actor* ai)
+{
+	ai->error = false;
+	ai->actor->color.a = 255;
 }
 
 /* try to (re)load AI script */
@@ -59,20 +71,22 @@ void ai_load(struct ai_actor* ai)
 		if (ai->loaded)
 			fprintf(stderr, "Can't stat AI script\n");
 		ai->loaded = false;
+		ai_error(ai);
 		return;
 	}
 
 	/* nothing to do if we've already loaded the script and it hasn't been updated */
 	if (ai->loaded && ai->load_time == script_stat.st_mtime) return;
 
+	if (ai->loaded)
+		fprintf(stderr, "Reloading AI...\n");
+	else
+		fprintf(stderr, "Loading AI...\n");
+
 	ai->loaded = true;
 	ai->load_time = script_stat.st_mtime;
 
-	fprintf(stderr, "Loading AI...\n");
-
-	/* reset error state */
-	ai->error = false;
-	ai->actor->color.a = 255;
+	ai_reset(ai);
 
 	int state;
 	rb_load_protect(rb_str_new_cstr(ai->script), 0, &state);
@@ -91,14 +105,7 @@ VALUE think_wrapper(VALUE actors)
 /* run the AI script if possible */
 void ai_think(struct ai_actor* ai, VALUE ai_v, VALUE player_v)
 {
-	/* indicate that AI isn't running */
-	if (!ai->loaded || ai->error)
-	{
-		ai->actor->dir.x = 0.f;
-		ai->actor->dir.y = 0.f;
-		ai->actor->color.a = 127;
-		return;
-	}
+	if (!ai->loaded || ai->error) return;
 
 	int state;
 	rb_protect(think_wrapper, rb_ary_new_from_args(2, ai_v, player_v), &state);
