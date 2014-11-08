@@ -99,12 +99,8 @@ VALUE integer_m_initialize(int argc, VALUE* argv, VALUE self)
 				return self;
 			}
 			/* break intentionally omitted */
-		case T_OBJECT:
-			rb_raise(rb_eTypeError, "%+"PRIsVALUE" is not an integer type", val);
-			break;
 		default:
-			/* shouldn't get here */
-			rb_raise(rb_eRuntimeError, "invalid object %+"PRIsVALUE, val);
+			rb_raise(rb_eTypeError, "%+"PRIsVALUE" is not an integer type", val);
 			break;
 	}
 
@@ -210,6 +206,7 @@ VALUE integer_m_add(VALUE self, VALUE x)
 }
 /* multiplication and subtraction would be defined nearly identically */
 
+/* GMP::Integer#-@ */
 VALUE integer_m_neg(VALUE self)
 {
 	UNWRAP(self, data);
