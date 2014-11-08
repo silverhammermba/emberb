@@ -12,12 +12,6 @@
 const unsigned int win_width = 1024;
 const unsigned int win_height = 768;
 const unsigned int actor_size = 30;
-const char* ai_script = "./ai.rb";
-
-/* globals */
-bool ai_loaded = false;
-bool ai_error = false;
-time_t ai_load_time;
 
 /* for position and direction */
 struct vec2
@@ -35,46 +29,55 @@ struct actor
 	SDL_Color color;
 };
 
-/* for handling exceptions from protect calls */
-void show_script_error()
+struct ai_actor
 {
-	ai_error = true;
+	char* script;
+	bool loaded;
+	bool error;
+	time_t load_time;
+	struct actor* actor;
+};
+
+/* for handling exceptions from protect calls */
+void ai_error(struct ai_actor* ai)
+{
+	ai->error = true;
 
 	VALUE exception = rb_errinfo();
 	rb_set_errinfo(Qnil);
 
-	rb_warn("AI script error: %"PRIsVALUE"\n", exception);
+	rb_warn("AI script error: %"PRIsVALUE"", exception);
 }
 
 /* try to (re)load AI script */
-void update_ai(struct actor* act)
+void ai_load(struct ai_actor* ai)
 {
 	/* get script modification time */
 	struct stat script_stat;
-	if (stat(ai_script, &script_stat))
+	if (stat(ai->script, &script_stat))
 	{
-		if (ai_loaded)
+		if (ai->loaded)
 			fprintf(stderr, "Can't stat AI script\n");
-		ai_loaded = false;
+		ai->loaded = false;
 		return;
 	}
 
 	/* nothing to do if we've already loaded the script and it hasn't been updated */
-	if (ai_loaded && ai_load_time == script_stat.st_mtime) return;
+	if (ai->loaded && ai->load_time == script_stat.st_mtime) return;
 
-	ai_loaded = true;
-	ai_load_time = script_stat.st_mtime;
+	ai->loaded = true;
+	ai->load_time = script_stat.st_mtime;
 
 	fprintf(stderr, "Loading AI...\n");
 
 	/* reset error state */
-	ai_error = false;
-	act->color.a = 255;
+	ai->error = false;
+	ai->actor->color.a = 255;
 
 	int state;
-	rb_load_protect(rb_str_new_cstr(ai_script), 0, &state);
+	rb_load_protect(rb_str_new_cstr(ai->script), 0, &state);
 
-	if (state) show_script_error();
+	if (state) ai_error(ai);
 }
 
 /* for rescuing exceptions in the AI script */
@@ -86,21 +89,21 @@ VALUE think_wrapper(VALUE actors)
 }
 
 /* run the AI script if possible */
-void ai_think(struct actor* act, VALUE ai_v, VALUE player_v)
+void ai_think(struct ai_actor* ai, VALUE ai_v, VALUE player_v)
 {
 	/* indicate that AI isn't running */
-	if (!ai_loaded || ai_error)
+	if (!ai->loaded || ai->error)
 	{
-		act->dir.x = 0.f;
-		act->dir.y = 0.f;
-		act->color.a = 127;
+		ai->actor->dir.x = 0.f;
+		ai->actor->dir.y = 0.f;
+		ai->actor->color.a = 127;
 		return;
 	}
 
 	int state;
 	rb_protect(think_wrapper, rb_ary_new_from_args(2, ai_v, player_v), &state);
 
-	if (state) show_script_error();
+	if (state) ai_error(ai);
 }
 
 /* move actor after ms time has elapsed */
@@ -153,7 +156,7 @@ VALUE actor_m_pos(VALUE self)
 	return rb_ary_new_from_args(2, DBL2NUM(data->pos.x), DBL2NUM(data->pos.y));
 }
 
-/* Actor#pos - returns last movement direction x, y. each is in the range (-1..1) */
+/* Actor#dir - returns last movement direction x, y. each is in the range (-1..1) */
 VALUE actor_m_dir(VALUE self)
 {
 	struct actor* data;
@@ -243,16 +246,23 @@ int main(int argc, char** argv)
 		.speed = 0.5f,
 		.color = { .r = 0, .g = 0, .b = 255, .a = 255 }
 	};
-	struct actor ai = {
+	struct actor ai_act = {
 		.pos = { .x = win_width / 2.f - 100.f - actor_size / 2.f, .y = win_height / 2.f - actor_size / 2.f },
 		.dir = { .x = 0.f, .y = 0.f },
 		.speed = 0.55f,
 		.color = { .r = 255, .g = 0, .b = 0, .a = 255 }
 	};
 
+	struct ai_actor ai = {
+		.script = "./ai.rb",
+		.loaded = false,
+		.error = false,
+		.actor = &ai_act
+	};
+
 	/* create Ruby objects for actors */
 	VALUE player_v = Data_Wrap_Struct(cActor, NULL, NULL, &player);
-	VALUE ai_v = Data_Wrap_Struct(cActor, NULL, NULL, &ai);
+	VALUE ai_v = Data_Wrap_Struct(cActor, NULL, NULL, &ai_act);
 
 	/* don't allow the player to be moved via the AI script */
 	rb_undef_method(rb_singleton_class(player_v), "move");
@@ -265,7 +275,7 @@ int main(int argc, char** argv)
 	unsigned int ai_time;
 
 	/* start up AI */
-	update_ai(&ai);
+	ai_load(&ai);
 	ai_think(&ai, ai_v, player_v);
 
 	/* for player input */
@@ -315,21 +325,21 @@ int main(int argc, char** argv)
 		/* AI movement */
 		if (ai_time >= ai_step)
 		{
-			update_ai(&ai);
+			ai_load(&ai);
 			ai_think(&ai, ai_v, player_v);
 
 			ai_time %= ai_step;
 		}
 
 		/* game step */
-		step_actor(&ai, frame_time);
+		step_actor(&ai_act, frame_time);
 		step_actor(&player, frame_time);
 
 		/* render */
 		SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
 		SDL_RenderClear(renderer);
 
-		draw_actor(renderer, &ai);
+		draw_actor(renderer, &ai_act);
 		draw_actor(renderer, &player);
 
 		SDL_RenderPresent(renderer);
