@@ -6,6 +6,8 @@ def think ai, player
   dx, dy = player.dir
 
   # ... movement logic ...
+  x = dy
+  y = -dx
 
   # move in this direction
   ai.move x, y
