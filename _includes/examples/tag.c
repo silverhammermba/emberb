@@ -268,6 +268,7 @@ int main(int argc, char** argv)
 	};
 
 	/* create Ruby objects for actors */
+	/* we can use NULL for the free function because the data are on the stack */
 	VALUE player_v = Data_Wrap_Struct(cActor, NULL, NULL, &player);
 	VALUE ai_v = Data_Wrap_Struct(cActor, NULL, NULL, &ai_act);
 
