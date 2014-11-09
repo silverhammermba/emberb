@@ -78,34 +78,35 @@ pointers can be passed to various API functions and macros that will safely
 access and manipulate the Ruby objects. `VALUE` is the API-defined C type for
 these pointers.
 
-Probably the most frequent question you'll have is "what is the class of this
-`VALUE`?". The easiest way to answer this with the API is to use the `TYPE()`
-macro.
-
-{% highlight c %}
-{% include c/type.h %}
-{% endhighlight %}
-
-Given a `VALUE`, `TYPE()` returns one of the [`T_`
-constants](../readme#data-types) defined by the API for the core classes.
-`TYPE()` works kind of like [`is_a?`][isa]: if you subclass `Array` it will
-return `T_ARRAY` for those instances. If none of the other constants make sense
-for the `VALUE`, `TYPE()` will return `T_OBJECT`[^tdata] (which makes sense
-since everything in Ruby `is_a?  Object`). That's why the `default:` for the
-above switch should not normally be reached. Considering raising an
-[exception](#exceptions) in that case.
-
-[isa]: http://ruby-doc.org/core-2.1.3/Object.html#method-i-is_a-3F
-
-If you have a specific class in mind, there are faster checks than that big
-switch statement:
+Probably the most frequent question you'll have is: "is this `VALUE` the right
+type?". There are a couple macros for performing this test, and both take a
+[`T_` constant](../readme#data-types) corresponding to the Ruby class you're
+testing for e.g. `T_STRING`, `T_ARRAY`, etc.
 
 {% highlight c %}
 {% include c/checktype.h %}
 {% endhighlight %}
 
-[^types]If you instead want the `VALUE` of the class object, use the
-`CLASS_OF()` macro.
+For certain classes, there are specialized macros that are a little more
+efficient:
+
+{% highlight c %}
+{% include c/check_p.h %}
+{% endhighlight %}
+
+These tests work for subclasses too: if you're testing for a subclass of `Array`
+use `T_ARRAY`, if you're testing for a subclass of `Object` use
+`T_OBJECT`[^tdata]. That being said, these tests _do not work like `is_a?`_;
+even though technically everything in Ruby `is_a? Object`, testing against
+`T_OBJECT` only returns true if there is no better fitting constant.
+
+If you want to handle a `VALUE` that could be one of a variety of types, the
+previous macros can be a little clumsy. In that case you can use the `TYPE()`
+macro to get the `T_` constant and handle your logic in a `switch`:
+
+{% highlight c %}
+{% include c/type.h %}
+{% endhighlight %}
 
 ### Constants ###
 
@@ -958,8 +959,6 @@ download all of the code examples.
 [^maybe]: There's also the enigmatically named `rb_gc_mark_maybe()`, but I'm not
           sure when it is needed.
 
-[^tdata]: Or it could return `T_DATA` if the object [wraps C data](#data).
-
-[^types]: I really don't know why `RB_TYPE_P()` is a thing.
+[^tdata]: Or use `T_DATA` if the object [wraps a C pointer](#data).
 
 [bug]: https://bugs.ruby-lang.org/issues/10466

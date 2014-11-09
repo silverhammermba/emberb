@@ -4,13 +4,13 @@ int main(int argc, char* argv[])
 {
 	ruby_init();
 
-	VALUE cFoo = rb_define_class("Foo", rb_cObject);
-	rb_cv_set(cFoo, "@@x", INT2FIX(3));
+	VALUE cFoo = rb_define_class("Foo", rb_cArray);
+	VALUE x = rb_funcall(cFoo, rb_intern("new"), 0);
 
-	VALUE foo = rb_funcall(cFoo, rb_intern("new"), 0);
-	VALUE x = rb_cv_get(cFoo, "@@x");
-
-	rb_warn("%+"PRIsVALUE, x);
+	if (RB_TYPE_P(x, T_ARRAY))
+		printf("true\n");
+	else
+		printf("false\n");
 
 	return ruby_cleanup(0);
 }
