@@ -112,9 +112,9 @@ macro to get the `T_` constant and handle your logic in a `switch`:
 
 Most of the standard Ruby constants have global `VALUE`s defined for them in the
 API so you don't need an API call to access them. Modules are prefixed with
-`rb_m` e.g. `rb_mKernel`; classes are prefixed with `rb_c` e.g.  `rb_cObject`;
-subclasses of `Exception` are prefixed with `rb_e` e.g.  `rb_eRuntimeError`; and
-the standard IO streams are prefixed with `rb_` e.g.  `rb_stderr`. `nil`,
+`rb_m` e.g. `rb_mKernel`; classes are prefixed with `rb_c` e.g. `rb_cObject`;
+subclasses of `Exception` are prefixed with `rb_e` e.g. `rb_eRuntimeError`; and
+the standard IO streams are prefixed with `rb_` e.g. `rb_stderr`. `nil`,
 `false`, and `true` are prefixed with `Q` e.g. `Qnil`.[^undef] As a convenience,
 `Qfalse` is also false in C (`0`).
 
@@ -433,7 +433,7 @@ wrapping:
 {% include c/ensure.h %}
 {% endhighlight %}
 
-Like `ensure` in Ruby, the return value of `ensure_func()` is never used.  If no
+Like `ensure` in Ruby, the return value of `ensure_func()` is never used. If no
 exception occurs, `rb_rescue()` will return the value of `begin_func()` which
 returns the value of `dangerous_func()`. If an exception does occur,
 `rb_rescue()` returns the value of `rescue_func()`.
@@ -450,7 +450,7 @@ general way: by defining some name that Ruby can access e.g. a variable name, a
 method name, etc. A general warning though: unlike Ruby, **the API lets you give
 things invalid names**. Ruby will raise a `SyntaxError` or `NameError` if you
 try to name a class `foo` (not constant) or an instance variable `bar` (no `@`),
-but the API will happily create them.  The API handles this by **not exposing
+but the API will happily create them. The API handles this by **not exposing
 invalid names to Ruby**. Since that's probably not what you want, double check
 the names you choose!
 
@@ -550,7 +550,7 @@ other arguments:
 {% endhighlight %}
 
 So really the API only lets you define two types of methods: ones that take a
-fixed number of arguments, and ones that slurp up all of their arguments.  What
+fixed number of arguments, and ones that slurp up all of their arguments. What
 about all of Ruby's fancy argument features? Where are optional arguments,
 options hashes, blocks, and all the mixtures of those?
 
@@ -581,8 +581,8 @@ characters are (in order):
 Each section is optional, so you can leave out the characters for things you
 don't need. Be aware that the parsing of the format string is greedy: `1*`
 describes a method with one mandatory argument and a splat. If you want one
-_optional_ argument and a splat you must specify `01*`.  Following the format
-string, you must pass a `VALUE*` for each _Ruby_ argument.  The number of
+_optional_ argument and a splat you must specify `01*`. Following the format
+string, you must pass a `VALUE*` for each _Ruby_ argument. The number of
 pointers passed should equal the "total" of the six sections, though you can
 pass `NULL` for an argument you don't care about. For example the format string
 `21*&` should have 5 `VALUE*`s passed (2 mandatory, 1 optional, 1 splatted, 1
@@ -682,10 +682,10 @@ assign to instance variables as usual. But what if your data have no Ruby analog
 
 The API lets you encapsulate C data by creating a `VALUE` of the desired class
 and then storing a `void*` pointing to the C data inside the Ruby object. Then
-whenever you need the C data, you can unpack the pointer and cast it back to the
-correct type. But where does this encapsulation occur? Let's answer that
-question with a question: what happens when you tell Ruby to create an object
-using `new`?  Basically this:
+whenever you need acces to the C data, you can unpack the pointer and cast it
+back to the correct type. But where does this encapsulation occur? Let's answer
+that question with a question: what happens when you tell Ruby to create an
+object using `new`? Basically this:
 
 {% highlight ruby %}
 {% include c/new.rb %}
@@ -706,7 +706,7 @@ complicated, like a `struct`). After allocating the C data, we use the
 is the class to give the `VALUE`, which here is the receiver since we're in a
 class method. The second argument is used by Ruby's garbage collector and will
 be described later, but as long your C data doesn't point to any Ruby objects
-you don't need it and can pass `NULL`.  The third argument is the function that
+you don't need it and can pass `NULL`. The third argument is the function that
 the garbage collector will call when the object is destroyed, and last is the
 data pointer itself. `VALUE`s that wrap C data will have type `T_DATA` with
 respect to the [`TYPE()` macro](#value).
@@ -802,7 +802,7 @@ The VM also applies the GVL to any C code you expose to Ruby. That's why you can
 use the API without worrying about it exploding when someone calls your C code
 from inside a `Thread`. The downside of this is that if your C code takes a
 while to run, you won't see any performance benefit from calling it in a
-`Thread` because **it will block all other threads** while it runs.  But the GVL
+`Thread` because **it will block all other threads** while it runs. But the GVL
 is only needed to protect API calls. If you have some C code that doesn't use
 the API, you can tell the VM to release the GVL before running your code in a
 thread and to reacquire it when it completes, allowing for true concurrency.
