@@ -304,7 +304,7 @@ functions to list here, so I recommend checking them out in the header
 
 Functions are generally named like `rb_(class)_(method)` and take at least one
 `VALUE` argument (the receiver). E.g. `rb_ary_pop()` for `Array#pop`,
-`rb_obj_dup` for `Object#dup`, etc.
+`rb_obj_dup()` for `Object#dup`, etc.
 
 ## Require ##
 
