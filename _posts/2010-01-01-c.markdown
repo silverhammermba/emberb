@@ -98,7 +98,8 @@ These tests work for subclasses too: if you're testing for a subclass of `Array`
 use `T_ARRAY`, if you're testing for a subclass of `Object` use
 `T_OBJECT`[^tdata]. That being said, these tests _do not work like `is_a?`_;
 even though technically everything in Ruby `is_a? Object`, testing against
-`T_OBJECT` only returns true if there is no better fitting constant.
+`T_OBJECT` won't return true for just any Ruby object &ndash; only those for
+which there is no better fitting constant.
 
 If you want to handle a `VALUE` that could be one of a variety of types, the
 previous macros can be a little clumsy. In that case you can use the `TYPE()`
@@ -516,9 +517,9 @@ Constants are defined similarly, but with the module to define them under:
 {% include c/constant.h %}
 {% endhighlight %}
 
-Getting a constant's `VALUE` is a little nuanced. The API function you call
-depends on what you want to happen if the constant is _not_ defined in the
-module you specify:
+You undefine a constant by setting it to `Qundef`. Getting a constant's `VALUE`
+is a little nuanced. The API function you call depends on what you want to
+happen if the constant is _not_ defined in the module you specify:
 
 {% highlight c %}
 {% include c/const_get.h %}
@@ -920,7 +921,9 @@ download all of the code examples.
            and not necessary.
 
 [^undef]: There's also `Qundef` representing an undefined value, but
-          this has no Ruby equivalent and is [rarely](#handling-blocks) used.
+          this has no Ruby equivalent and is [rarely](#handling-blocks)
+          [used](#constants-1). In fact, outside of those rare occassions,
+          `Qundef` can segfault the VM if Ruby was expecting a normal `VALUE`.
 
 [^wrap]: There's also `rb_eval_string_wrap()` which _should_ be useful, but is
          actually the same as `rb_eval_string_protect()` due to a [bug].
