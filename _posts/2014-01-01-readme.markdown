@@ -110,18 +110,18 @@ data types, your code will look something like this:
 {% highlight c %}
 switch (TYPE(obj)) {
   case T_FIXNUM:
-	/* process Fixnum */
-	break;
+    /* process Fixnum */
+    break;
   case T_STRING:
-	/* process String */
-	break;
+    /* process String */
+    break;
   case T_ARRAY:
-	/* process Array */
-	break;
+    /* process Array */
+    break;
   default:
-	/* raise exception */
-	rb_raise(rb_eTypeError, "not valid value");
-	break;
+    /* raise exception */
+    rb_raise(rb_eTypeError, "not valid value");
+    break;
 }
 {% endhighlight %}
 
@@ -845,7 +845,7 @@ fdbm_s_open(int argc, VALUE *argv, VALUE klass)
 {
     /* ... */
     if (rb_scan_args(argc, argv, "11", &file, &vmode) == 1) {
-        mode = 0666;		/* default value */
+        mode = 0666; /* default value */
     }
     /* ... */
 }

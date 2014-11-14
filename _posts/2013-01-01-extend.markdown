@@ -70,12 +70,12 @@ file dependencies, etc.
 
 ### Execution ###
 
-The rest couldn't be simpler[^argv]
+The rest couldn't be simpler
 
     $ ruby extconf.rb
-	$ make
+    $ make
 
-But of course that won't do anything without some C code to compile.
+[^argv]But of course that won't do anything without some C code to compile.
 
 ## Init ##
 
@@ -128,7 +128,7 @@ subdirectories of `ext/` and pass all of the `extconf.rb`s to the spec.
 [^glob]: I can only find these globals documented in README.EXT.
 
 [^argv]: README.EXT [hints](../readme#generate-makefile) that `mkmf` parses certain
-	  command line flags e.g.  `--vendor`. But I also can't find this documented
-	  anywhere.
+         command line flags e.g.  `--vendor`. But I can't find this documented
+         anywhere.
 
 [^rbg]: [http://guides.rubygems.org/gems-with-extensions/](http://guides.rubygems.org/gems-with-extensions/)

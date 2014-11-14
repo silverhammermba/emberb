@@ -25,10 +25,11 @@ struct actor
 {
 	struct vec2 pos;
 	struct vec2 dir;
-	float speed;
+	float speed; // top speed in pixels/millisecond
 	SDL_Color color;
 };
 
+/* wrapper for passing AI actor with AI script metadata */
 struct ai_actor
 {
 	char* script;
@@ -117,18 +118,17 @@ void ai_think(struct ai_actor* ai, VALUE ai_v, VALUE player_v)
 void step_actor(struct actor* act, unsigned int ms)
 {
 	float norm = sqrtf(act->dir.x * act->dir.x + act->dir.y * act->dir.y);
-	if (norm == 0.f)
-		return;
-	/* clamp magnitude to 1 */
-	else if (norm > 1.f)
-		norm = 1.f / norm;
-	else
-		norm = 1.f;
 
-	act->pos.x += act->dir.x * act->speed * (float)ms * norm;
-	act->pos.y += act->dir.y * act->speed * (float)ms * norm;
+	/* no movement */
+	if (norm == 0.f) return;
 
-	/* clamp to screen */
+	/* allow actor to move slower than speed, but not faster */
+	if (norm < 1.f) norm = 1.f;
+
+	act->pos.x += (act->dir.x * act->speed * (float)ms) / norm;
+	act->pos.y += (act->dir.y * act->speed * (float)ms) / norm;
+
+	/* clamp position to screen */
 	if (act->pos.x < 0.f)
 		act->pos.x = 0.f;
 	else if (act->pos.x > win_width - actor_size)
