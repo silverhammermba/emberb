@@ -6311,6 +6311,12 @@ code {
 #sidebar-wrapper {
   overflow: hidden;
 }
+#toc {
+  padding-left: 0px;
+}
+#toc ol {
+  padding-left: 20px;
+}
 /* nice nested list counters */
 #sidebar-wrapper ol {
   counter-reset: item;
