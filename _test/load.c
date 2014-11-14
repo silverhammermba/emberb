@@ -1,16 +1,19 @@
 #include <ruby.h>
 
+VALUE test(VALUE x)
+{
+	VALUE y = rb_str_new_cstr("foo");
+	char z = NUM2CHR(y);
+	printf("%hhd\n", z);
+	return Qundef;
+}
+
 int main(int argc, char* argv[])
 {
 	ruby_init();
 
-	VALUE cFoo = rb_define_class("Foo", rb_cArray);
-	VALUE x = rb_funcall(cFoo, rb_intern("new"), 0);
+	int state;
+	rb_protect(test, Qundef, &state);
 
-	if (RB_TYPE_P(x, T_ARRAY))
-		printf("true\n");
-	else
-		printf("false\n");
-
-	return ruby_cleanup(0);
+	return ruby_cleanup(state);
 }

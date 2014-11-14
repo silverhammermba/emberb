@@ -164,8 +164,9 @@ appropriate:
 * `DBL2NUM()` for `double`
 
 And there are macros for the opposite direction, which will try to convert
-whatever `Numeric` to the desired C type, and raise a `RangeError` if there is
-no appropriate conversion.
+whatever `Numeric` to the desired C type. These will raise a `RangeError` if
+the value wouldn't fit or `TypeError` if there is no implicit numeric conversion
+(so you can safely pass non-`Numeric` objects).
 
 * `NUM2CHR()` for `char` (works for `unsigned char` too)
 * `NUM2SHORT()` for `short`
@@ -180,8 +181,10 @@ no appropriate conversion.
 
 A **major** gotcha with these is that _none_ of the macros for converting to
 unsigned types raise an exception if you pass a negative value (surprisingly
-this [isn't a bug][bug]). Also, `NUM2CHR()` actually calls `NUM2INT()`, so it
-won't raise if the value would fit an `int` but not a `char`.
+this [isn't a bug][bug]). `NUM2CHR()` also has a couple quirks: it will only
+raise a `RangeError` if the value is too big for an _int_ and when passed a
+string it returns the numeric value of the first character rather than raising a
+`TypeError`.
 
 If you know that the conversion is safe, you should prefer the macros from the
 previous sections as they skip the range checks.

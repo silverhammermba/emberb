@@ -175,9 +175,6 @@ VALUE actor_m_dir(VALUE self)
 /* Actor#move - set next movement direction. x, y as in Actor#pos */
 VALUE actor_m_move(VALUE self, VALUE x, VALUE y)
 {
-	Check_Type(x, T_FLOAT);
-	Check_Type(y, T_FLOAT);
-
 	float nx = NUM2DBL(x);
 	float ny = NUM2DBL(y);
 
