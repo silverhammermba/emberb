@@ -73,7 +73,7 @@ over a better way to do that [later on](#send).
 Before we go any further, we need to understand `VALUE`s. Due to the danger of
 monkeying around inside the VM, the API never lets you directly access Ruby's
 objects[^intern]. Instead, your C code will store and pass around _pointers_ to
-Ruby objects (much like variables in Ruby contain pointers to objects). These
+Ruby objects (like how variables in Ruby contain pointers to objects). These
 pointers can be passed to various API functions and macros that will safely
 access and manipulate the Ruby objects. `VALUE` is the API-defined C type for
 these pointers.
@@ -87,19 +87,18 @@ testing for e.g. `T_STRING`, `T_ARRAY`, etc.
 {% include c/checktype.h %}
 {% endhighlight %}
 
+These tests work for subclasses too: if you're testing for a subclass of `Array`
+use `T_ARRAY`, if you're testing for a subclass of `Object` use
+`T_OBJECT`[^tdata]. That being said, these tests _do not work like `is_a?`_;
+even though everything in Ruby `is_a? Object`, testing against `T_OBJECT` will
+only return true for objects for which there is no better fitting constant.
+
 For certain classes, there are specialized macros that are a little more
-efficient:
+efficient than the previous:
 
 {% highlight c %}
 {% include c/check_p.h %}
 {% endhighlight %}
-
-These tests work for subclasses too: if you're testing for a subclass of `Array`
-use `T_ARRAY`, if you're testing for a subclass of `Object` use
-`T_OBJECT`[^tdata]. That being said, these tests _do not work like `is_a?`_;
-even though technically everything in Ruby `is_a? Object`, testing against
-`T_OBJECT` won't return true for just any Ruby object &ndash; only those for
-which there is no better fitting constant.
 
 If you want to handle a `VALUE` that could be one of a variety of types, the
 previous macros can be a little clumsy. In that case you can use the `TYPE()`
