@@ -460,8 +460,8 @@ the names you choose!
 Most of the API functions in this section correspond closely to metaprogramming
 methods in Ruby. When you're trying to do something using the API, it can be
 helpful to think about how you would do it in Ruby using only metaprogramming
-method calls. For example, rather than `class Foo; def bar; end; end`, think `Foo
-= Class.new; Foo.define_method(:bar) {}`.
+method calls. For example, rather than `class Foo; def bar; end; end`, think
+`Foo = Class.new; Foo.define_method(:bar) {}`.
 
 ### Global Variables ###
 
@@ -696,23 +696,24 @@ object using `new`? Basically this:
 
 Before calling the _instance method_ `initialize` that we know so well, `new`
 first calls the _class method_ `allocate` to actually create the object. That is
-the method you'll need to define if you want your objects to wrap C data.
+the method you'll need to define if you want your objects to wrap C data. The
+following example creates a class `Foo` which wraps an `int` that can be set
+by `initialize`:
 
 {% highlight c %}
 {% include c/wrap.h %}
 {% endhighlight %}
 
-This simple example create the class `Foo` which wraps an `int` that can be set
-by `initialize` (in most cases you'll probably be wrapping something more
-complicated, like a `struct`). After allocating the C data, we use the
-`Data_Wrap_Struct()` macro to wrap the pointer in a `VALUE`. The first argument
-is the class to give the `VALUE`, which here is the receiver since we're in a
-class method. The second argument is used by Ruby's garbage collector and will
-be described later, but as long your C data doesn't point to any Ruby objects
-you don't need it and can pass `NULL`. The third argument is the function that
-the garbage collector will call when the object is destroyed, and last is the
-data pointer itself. `VALUE`s that wrap C data will have type `T_DATA` with
-respect to the [`TYPE()` macro](#value).
+In most cases you'll probably be wrapping something more complicated (like a
+`struct`), but the principles will be the same. After allocating the C data, we
+use the `Data_Wrap_Struct()` macro to wrap the pointer in a `VALUE`. The first
+argument is the class to give the `VALUE`, which here is the receiver since
+we're in a class method. The second argument is used by Ruby's garbage collector
+and will be described later, but as long your C data doesn't point to any Ruby
+objects you don't need it and can pass `NULL`. The third argument is the
+function that the garbage collector will call when the object is destroyed, and
+last is the data pointer itself. `VALUE`s that wrap C data will have type
+`T_DATA` with respect to the [`TYPE()` macro](#value).
 
 `Data_Get_Struct()` is simpler: it takes the object to unwrap, the type of the
 underlying data, and the pointer to assign the data to.
