@@ -8,7 +8,7 @@ title: The Ruby C API
 For the greatest chance of success with this guide, I recommend being fairly
 comfortable with C and _very_ comfortable with Ruby.
 
-You don't "need" to know any advanced C concepts in order to use the API; most
+You don't _need_ to know any advanced C concepts in order to use the API; most
 of the complexity is hidden behind functions and macros. However the API is
 **huge** and largely **undocumented**. After you start using it, you will
 inevitably find yourself delving through the Ruby source code at some point to
@@ -332,9 +332,6 @@ for the second argument.
 
 ## Exceptions ##
 
-If you've been playing around with the API you've almost certainly run into
-exceptions by now, so I should probably talk about them.
-
 ### Raise ###
 
 To raise an exception, use:
@@ -358,8 +355,8 @@ the code you're protecting to be in a function that takes and returns a single
 {% include c/danger.h %}
 {% endhighlight %}
 
-Unless you wanted to protect a function of exactly this type, you will probably
-need to make a wrapper function in this format that makes the desired call. The
+Unless you wanted to rescue a function of exactly this type, you will probably
+need to make a wrapper function in this format that runs the desired code. The
 way to access a rescued exception is also independent of the way it is rescued:
 
 {% highlight c %}
@@ -391,8 +388,8 @@ two are the function to call if an exception is raised and its argument.
 `rb_rescue2()` is a varargs function, so after that comes a list of the
 exception classes you want to rescue. The last argument should always be `0` to
 indicate the end of the class list. Like `rescue` in Ruby, any exceptions not in
-this list will not be rescued. If you want to rescue `StandardError` (like a
-blank `rescue` in Ruby), you can use `rb_rescue()` which takes just the first
+this list will not be rescued. If you just want to rescue `StandardError` (like
+a blank `rescue` in Ruby), you can use `rb_rescue()` which takes just the first
 four arguments of `rb_rescue2()`.
 
 The API does not provide an easy way to run different rescue code for different
@@ -428,7 +425,7 @@ state from the other `*_protect()` functions).
 
 `rb_ensure()` is similar to `rb_rescue()` except that it doesn't do anything
 about exceptions and the second function is _always_ called after the first.
-That may sound simple enough, but that means if you want the usual `begin;
+That may sound simple enough, but that means that if you want the usual `begin;
 rescue; ensure; end` structure as in Ruby, you'll need another layer of
 wrapping:
 
@@ -444,9 +441,8 @@ returns the value of `dangerous_func()`. If an exception does occur,
 ## Definitions, Declarations ##
 
 So far we've been creating and modifying objects directly in the VM's memory,
-but none of our API calls have had a visible effect _within the Ruby code_. For
-example, a `String` made with `rb_str_new_cstr()` is only accessible within the
-API &ndash; there's no variable in Ruby for it.
+but none of our API calls have had a visible effect _within the Ruby code_: a
+`String` made with `rb_str_new_cstr()` can only be accessed from C by default.
 
 There are a few ways to make things visible to Ruby but they all work the same
 general way: by defining some name that Ruby can access e.g. a variable name, a
@@ -534,7 +530,7 @@ Defining modules is super easy.
 {% include c/module.h %}
 {% endhighlight %}
 
-Classes work the same but you need to give them a superclass.
+Classes work the same way but they also need a superclass.
 
 {% highlight c %}
 {% include c/class.h %}
@@ -542,11 +538,10 @@ Classes work the same but you need to give them a superclass.
 
 ### Methods ###
 
-Here's where it gets interesting again. There are many kinds of API calls for
-defining methods, but before you use any of them you'll need a C function which
-the method will call. The function must return a `VALUE` and have one `VALUE`
-argument for the receiver of the method. There are three ways you can define its
-other arguments:
+Here's where it gets interesting. There are many kinds of API calls for defining
+methods, but before you use any of them you'll need a C function that the method
+calls. The function must return a `VALUE` and have one `VALUE` argument for the
+receiver of the method. There are three ways you can define its other arguments:
 
 {% highlight c %}
 {% include c/methodc.h %}
@@ -638,8 +633,8 @@ You might want to call `super` in your method.
 Unlike in Ruby `rb_call_super()` will **not** implicitly pass along the method
 arguments to the super if you give it no arguments. You must explicitly pass the
 correct `argc` and `argv` (it _does_ automatically pass `self`). For that reason
-I recommend using the third (C array) style of method definition if you want to
-use `rb_call_super()`.
+I recommend using the C array style of method definition if you want to use
+`rb_call_super()`.
 
 #### Definition ####
 
@@ -732,8 +727,8 @@ verbose. If the function to free your data just calls `free()` as in the
 example, you can pass `RUBY_DEFAULT_FREE` as the function pointer and Ruby will
 free it for you (**don't** use `NULL` unless you like memory leaks). Similarly,
 if your allocation is just a `malloc()` as in the example, the macro
-`Data_Make_Struct()` does the allocation for you _and_ wraps it. We could've
-rewritten the allocation function as such:
+`Data_Make_Struct()` does the allocation for you _and_ wraps it. We could
+rewrite the allocation function from the previous example as such:
 
 {% highlight c %}
 {% include c/makestruct.h %}
@@ -902,7 +897,7 @@ elsewhere that wraps the call to the useful function.
 ### Examples ###
 
 Head over to the [Examples](../examples) page for short, compilable examples of
-these functions in use.
+the API in action.
 
 ### Contribute ###
 
@@ -934,11 +929,6 @@ download all of the code examples.
 [^wchar]: I don't know what the best way is to handle `wchar_t`. In my tests I had
           some success just treating them as `char`s, but I think that may have
           been a happy accident, and could certainly fail on different platforms.
-
-[^pi]: The documentation [claims](../readme#exceptions-and-errors) that the
-       format directives `%i` and `%+i` can be used for `to_s` and `inspect`
-       (both take a `VALUE`) but a glance at the source shows that this isn't
-       true. `%i` is the same as `%d`.
 
 [^clear]: The documentation [states](../readme#control-structure) that "You have to
           clear the error info [when] ignoring the caught exception". But I can't
