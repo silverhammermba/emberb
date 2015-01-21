@@ -573,7 +573,7 @@ characters are (in order):
 2. The number of optional arguments: a digit
 3. A splatted argument: `*`
 4. The number of trailing mandatory arguments: a digit
-5. An options hash: `:`
+5. Keyword arguments: `:`
 6. A block argument: `&`
 
 Each section is optional, so you can leave out the characters for things you
