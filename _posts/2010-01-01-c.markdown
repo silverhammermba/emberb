@@ -921,7 +921,7 @@ download all of the code examples.
           `Qundef` can segfault the VM if Ruby was expecting a normal `VALUE`.
 
 [^wrap]: There's also `rb_eval_string_wrap()` which _should_ be useful, but is
-         actually the same as `rb_eval_string_protect()` due to a [bug].
+         actually the same as `rb_eval_string_protect()` due to a [bug][bug2].
 
 [^chr]: There is a `CHR2FIX()` macro, but in my tests this sometimes gave
         unexpected results. `LONG2FIX()` should work.
@@ -957,4 +957,4 @@ download all of the code examples.
 
 [^tdata]: Or use `T_DATA` if the object [wraps a C pointer](#data).
 
-[bug]: https://bugs.ruby-lang.org/issues/10466
+[bug2]: https://bugs.ruby-lang.org/issues/10466
