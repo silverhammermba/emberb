@@ -906,7 +906,7 @@ have_library(lib[, func[, headers[, opt]]])
 find_library(lib[, func, *paths])
 : find library from paths
 
-have_func(func[, headers[, opt])
+have_func(func[, headers[, opt]])
 : check whether function exists
 
 have_var(var[, headers[, opt]])
