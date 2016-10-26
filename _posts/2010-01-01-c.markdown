@@ -680,7 +680,7 @@ assign to instance variables as usual. But what if your data have no Ruby analog
 
 The API lets you encapsulate C data by creating a `VALUE` of the desired class
 and then storing a `void*` pointing to the C data inside the Ruby object. Then
-whenever you need acces to the C data, you can unpack the pointer and cast it
+whenever you need access to the C data, you can unpack the pointer and cast it
 back to the correct type. But where does this encapsulation occur? Let's answer
 that question with a question: what happens when you tell Ruby to create an
 object using `new`? Basically this:
