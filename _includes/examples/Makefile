@@ -1,8 +1,8 @@
-CFLAGS=-std=gnu99 -Wall $(shell pkg-config --cflags ruby-2.1 sdl2)
-LIBS=$(shell pkg-config --libs ruby-2.1 sdl2)
+RUBY=2.4
+CFLAGS=-std=gnu11 -Wall $(shell pkg-config --cflags ruby-$(RUBY) sdl2)
+LDLIBS=$(shell pkg-config --libs ruby-$(RUBY) sdl2)
 
-tag: tag.o
-	$(CC) $(CFLAGS) -o $@ $< $(LIBS)
+all: tag
 
 clean:
 	rm -f tag *.o
