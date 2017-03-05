@@ -1,4 +1,4 @@
-RUBY=2.4
+RUBY=$(shell grep rbversion ../_config.yml | cut -d' ' -f2)
 CFLAGS=-std=c11 -Wall -ggdb -pg $(shell pkg-config --cflags ruby-$(RUBY))
 LDLIBS=$(shell pkg-config --libs ruby-$(RUBY))
 

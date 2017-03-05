@@ -10,12 +10,12 @@ header `ruby/config.h`. You will probably need to tell your compiler about the
 include paths for these headers. You will also need to link with the Ruby lib.
 On my machine, my minimal compiler options are
 
-    -I/usr/include/ruby-2.1.0 -I/usr/include/ruby-2.1.0/x86_64-linux -lruby
+    -I/usr/include/ruby-{{ site.rbversion }}.0 -I/usr/include/ruby-{{ site.rbversion }}.0/x86_64-linux -lruby
 
 Though, if available, you should really use `pkg-config` to get the appropriate
 options for your distribution:
 
-    $ pkg-config --cflags --libs ruby-2.1
+    $ pkg-config --cflags --libs ruby-{{ site.rbversion }}
 
 ## Startup, Teardown ##
 

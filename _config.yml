@@ -6,3 +6,4 @@ permalink: /:categories/:title/
 gems: ['jekyll-less']
 kramdown:
   parse_block_html: true
+rbversion: 2.4
