@@ -1,11 +1,13 @@
-CFLAGS=-std=c99 -Wall -ggdb -pg $(shell pkg-config --cflags ruby-2.2)
-BINS=$(patsubst %.c,%.out,$(wildcard *.c))
-LIBS=$(shell pkg-config --libs ruby-2.2)
+RUBY=2.4
+CFLAGS=-std=c11 -Wall -ggdb -pg $(shell pkg-config --cflags ruby-$(RUBY))
+LDLIBS=$(shell pkg-config --libs ruby-$(RUBY))
+
+BINS=$(basename $(wildcard *.c))
+
+.PHONY: ruby.h
 
 all: $(BINS)
 
-%.out: %.c
-	$(CC) $(CFLAGS)  -o $@ $< $(LIBS)
-
+# if you want to see all the stuff that including ruby.h gives you
 ruby.h:
-	echo '#include <ruby.h>' | $(CC) -E -P -dD `pkg-config --cflags ruby-2.2` -xc -o ruby.h -
+	echo '#include <ruby.h>' | $(CC) -E -P -dD $(CFLAGS) -xc -o $@ -
