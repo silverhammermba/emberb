@@ -72,8 +72,10 @@ file dependencies, etc.
 
 The rest couldn't be simpler
 
-    $ ruby extconf.rb
-    $ make
+{% highlight shell_session %}
+$ ruby extconf.rb
+$ make
+{% endhighlight %}
 
 [^argv]But of course that won't do anything without some C code to compile.
 

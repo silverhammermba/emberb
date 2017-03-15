@@ -60,7 +60,7 @@ doesn't take a `state` argument and instead raises any exceptions normally. See
 [Exceptions](#exceptions) for how to handle both of these cases.
 
 Unlike `eval` in Ruby, these functions evaluate the string in an isolated
-binding &ndash; like when you `require` something. So local variables in the
+binding&mdash;like when you `require` something. So local variables in the
 string will not be accessible from elsewhere and vice versa.
 
 However, like using `eval` in Ruby, using these functions is not a good
@@ -342,7 +342,7 @@ To raise an exception, use:
 {% include c/raise.h %}
 {% endhighlight %}
 
-The first and second arguments are the exception class and message &ndash; like
+The first and second arguments are the exception class and message&mdash;like
 `raise` in Ruby. The big difference is that the message is a format string [just
 like in `rb_sprintf()`](#string), letting you more easily build a useful
 message.
@@ -477,7 +477,7 @@ will be automatically synchronized with one.
 {% endhighlight %}
 
 The `VALUE` should be initialized before you create the global in Ruby and it
-should be global in C as well &ndash; you don't want it to go out of scope while
+should be global in C as well&mdash;you don't want it to go out of scope while
 Ruby is using it! For `rb_define_hooked_variable()`, you can pass `NULL` for the
 getter/setter if you want to synchronize normally for that operation. Or you can
 throw out `global` entirely with `rb_define_virtual_variable()` though of course
@@ -747,7 +747,7 @@ active, then the second (sweep) pass iterates through every _allocated_ Ruby
 object and frees the ones that haven't been marked active.
 
 This is relevant to wrapping C data because it's possible that you might wrap a
-C `struct` which contains a Ruby `VALUE` &ndash; which the garbage collector is
+C `struct` which contains a Ruby `VALUE`&mdash;which the garbage collector is
 responsible for cleaning up. Since the garbage collector is only aware of
 `VALUE`s referenced _by Ruby_ (not by C pointers), it won't be able to mark the
 referenced `VALUE` as active. The result is that as soon as the garbage
@@ -889,7 +889,9 @@ this guide going over them:
 If you find some function in the header that isn't documented anywhere, your
 next stop should be the Ruby source code.
 
-    $ git clone https://github.com/ruby/ruby.git
+{% highlight shell_session %}
+$ git clone https://github.com/ruby/ruby.git
+{% endhighlight %}
 
 When reading through the source code, always keep the headers at hand: there are
 lots of really useful functions in there that _look_ like they should be in the

@@ -10,12 +10,16 @@ header `ruby/config.h`. You will probably need to tell your compiler about the
 include paths for these headers. You will also need to link with the Ruby lib.
 On my machine, my minimal compiler options are
 
-    -I/usr/include/ruby-{{ site.rbversion }}.0 -I/usr/include/ruby-{{ site.rbversion }}.0/x86_64-linux -lruby
+{% highlight shell_session %}
+$ gcc -I/usr/include/ruby-{{ site.rbversion }}.0 -I/usr/include/ruby-{{ site.rbversion }}.0/x86_64-linux -lruby
+{% endhighlight %}
 
 Though, if available, you should really use `pkg-config` to get the appropriate
 options for your distribution:
 
-    $ pkg-config --cflags --libs ruby-{{ site.rbversion }}
+{% highlight shell_session %}
+$ pkg-config --cflags --libs ruby-{{ site.rbversion }}
+{% endhighlight %}
 
 ## Startup, Teardown ##
 
@@ -31,10 +35,10 @@ your program! If you would rather have a softer error, you can instead call
 `ruby_setup()` which returns a nonzero value if a failure occurred
 (unfortunately it is not clear how to get a message for the error[^err]).
 
-If an error occurs during `rb_cleanup()`, it returns a nonzero value &ndash;
-otherwise it returns the argument you passed it. This allows a little shortcut
-for returning an error status if the cleanup fails (as demonstrated in the
-previous example).
+If an error occurs during `rb_cleanup()`, it returns a nonzero
+value&mdash;otherwise it returns the argument you passed it. This allows a
+little shortcut for returning an error status if the cleanup fails (as
+demonstrated in the previous example).
 
 During cleanup, the VM might evaluate more Ruby code (if you passed a block to
 `at_exit`, for example) which could raise an exception. `ruby_cleanup()` handles
