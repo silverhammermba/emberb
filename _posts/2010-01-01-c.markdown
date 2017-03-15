@@ -80,8 +80,10 @@ these pointers.
 
 Probably the most frequent question you'll have is: "is this `VALUE` the right
 type?". There are a couple macros for performing this test, and both take a
-[`T_` constant](../readme#data-types) corresponding to the Ruby class you're
+[`T_` constant][datatypes] corresponding to the Ruby class you're
 testing for e.g. `T_STRING`, `T_ARRAY`, etc.
+
+[datatypes]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc#data-types
 
 {% highlight c %}
 {% include c/checktype.h %}
@@ -849,20 +851,20 @@ temporarily reacquire the GVL:
 
 ## See Also ##
 
-### README.EXT ###
+### extension.rdoc ###
 
-[README.EXT](../readme) is Ruby's official API documentation. It's included in
-the Ruby source as a plain text file, but I've HTML-ified it for nicer online
-reading. It's a bit spotty and has some poor recommendations (in my opinion),
-but it is also a little more exhaustive on certain topics. In many cases this is
-because I intentionally skipped something that I either found not useful or
-better documented elsewhere.
+Ruby does have [official API documentation][readme]. It's a bit spotty and has
+some poor recommendations (in my opinion), but it is also a little more
+exhaustive on certain topics. In many cases this is because I intentionally
+skipped something that I either found not useful or better documented elsewhere.
+
+[readme]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc
 
 ### Headers ###
 
 I think some of the handiest resources are the Ruby headers themselves. The full
 API (i.e. everything you get by including `ruby.h`) easily consists of a
-thousand functions, macros, constants, and globals &ndash; most of which have
+thousand functions, macros, constants, and globals&mdash;most of which have
 never been documented. However _most_ things are reasonably named and you should
 be able to figure out what they do from the header. Most everything you need
 should be in the headers `ruby/ruby.h` and `ruby/intern.h`. The former has all
@@ -930,18 +932,17 @@ download all of the code examples.
           some success just treating them as `char`s, but I think that may have
           been a happy accident, and could certainly fail on different platforms.
 
-[^clear]: The documentation [states](../readme#control-structure) that "You have to
-          clear the error info [when] ignoring the caught exception". But I can't
-          find any documentation of when it would be cleared for you &ndash; it seems
-          like you _always_ have to clear it.
+[^clear]: The documentation [states][control] that "You have to clear the error
+          info [when] ignoring the caught exception" during `rb_protect`. But I
+          can't find any documentation of when it would be cleared for
+          you&mdash;it seems like you _always_ have to clear it.
 
 [^yield]: And there's `rb_yield_block()` which takes two unused arguments and is
           never called by anything in Ruby. Odd.
 
-[^break]: The documentation [mentions](../readme#control-structure)
-          `rb_iter_break()` and `rb_iter_break_value()` for breaking out of a
-          block, but can't you just return early? I can't think of a use-case
-          for these.
+[^break]: The documentation [mentions][control] `rb_iter_break()` and
+          `rb_iter_break_value()` for breaking out of a block, but can't you
+          just return early? I can't think of a use-case for these.
 
 [^int]: There is also the function `rb_thread_call_without_gvl2()`. The
         documentation in `thread.c` says that if "[it] detects interrupt, it
@@ -957,4 +958,5 @@ download all of the code examples.
 
 [^tdata]: Or use `T_DATA` if the object [wraps a C pointer](#data).
 
+[control]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc#control-structure
 [bug2]: https://bugs.ruby-lang.org/issues/10466

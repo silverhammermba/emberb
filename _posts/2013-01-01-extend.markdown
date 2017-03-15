@@ -125,10 +125,13 @@ subdirectories of `ext/` and pass all of the `extconf.rb`s to the spec.
 
 ## Footnotes ##
 
-[^glob]: I can only find these globals documented in README.EXT.
+[^glob]: Check the [official documentation][globals].
 
-[^argv]: README.EXT [hints](../readme#generate-makefile) that `mkmf` parses certain
+[^argv]: The official documentation [hints][makefile] that `mkmf` parses certain
          command line flags e.g.  `--vendor`. But I can't find this documented
          anywhere.
 
 [^rbg]: [http://guides.rubygems.org/gems-with-extensions/](http://guides.rubygems.org/gems-with-extensions/)
+
+[globals]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc#prepare-extconfrb
+[makefile]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc#generate-makefile
