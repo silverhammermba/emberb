@@ -8,18 +8,17 @@ title: The Ruby C API
 For the greatest chance of success with this guide, I recommend being fairly
 comfortable with C and _very_ comfortable with Ruby.
 
-You don't _need_ to know any advanced C concepts in order to use the API; most
-of the complexity is hidden behind functions and macros. However the API is
-**huge** and largely **undocumented**. After you start using it, you will
-inevitably find yourself delving through the Ruby source code at some point to
-figure out the behavior of some obscure function or macro. The Ruby source uses
-some fairly sophisticated C, so you'll need to at least be able to read it.
+Using Ruby's C API does not require any advanced C concepts, however the API is
+**huge** and largely **undocumented**. After you start using it, you will likely
+find yourself delving through the Ruby source code at some point to figure out
+the behavior of some obscure function or macro. The Ruby source uses some fairly
+sophisticated C, so you should at least feel comfortable reading it.
 
-In the next section I'll say "everything you can do in Ruby, you can also do
-using [the] C API". This is true, but it really should be followed with "...but
-it will generally be more unintuitive in C". If you don't have a strong
-intuition for the design of Ruby and the best practices in idiomatic Ruby, it
-can be extra hard to find the API functions that do what you want.
+You can think of the C API is being a big, clunky alternative to writing normal
+Ruby code. However the simple, elegant patterns of Ruby can be pretty
+unintuitive once translated into the language of the API. Having a strong
+intuition for Ruby's internal logic and the ideas behind its design will go a
+long way toward steering you toward the correct API functions.
 
 ## The Two Paths ##
 
@@ -29,7 +28,7 @@ world would you do this? There are two good reasons:
 
 1. You're writing some fancy application in C or C++ and you want some parts of
    your code to leverage the dynamic flexibility of Ruby. You can run the
-   Ruby interpreter inside your application and use the API to retrieve the
+   Ruby interpreter inside of your application and use the API to retrieve the
    results of Ruby code.
 2. You're writing some fancy application in Ruby and you want some parts of your
    code to leverage the speed and power of C (or an existing C library). You can
@@ -914,7 +913,7 @@ download all of the code examples.
 
 ## Footnotes ##
 
-[^intern]: Okay, that's a blatant lie. The API _totally_ lets you mess around
+[^intern]: That's a blatant lie. The API _definitely_ lets you mess around
            with the internal data structures of objects (look for things with
            names starting with capital R). But it's generally not a good idea
            and not necessary.
@@ -947,8 +946,8 @@ download all of the code examples.
           just return early? I can't think of a use-case for these.
 
 [^int]: There is also the function `rb_thread_call_without_gvl2()`. The
-        documentation in `thread.c` says that if "[it] detects interrupt, it
-        returns immediately." but I'm not sure what this means. If the
+        documentation in `thread.c` says that if it "detects interrupt, it
+        returns immediately," but I'm not sure what this means. If the
         unblocking function doesn't kill the thread, it still waits for the
         thread to finish on its own before returning.
 
