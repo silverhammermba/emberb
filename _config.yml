@@ -3,7 +3,7 @@ highlighter: rouge
 baseurl: /emberb
 markdown: kramdown
 permalink: /:categories/:title/
-gems: ['jekyll-less']
+plugins: ['jekyll-less']
 kramdown:
   parse_block_html: true
 rbversion: 2.4
