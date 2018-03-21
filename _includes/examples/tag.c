@@ -52,7 +52,7 @@ void ai_error(struct ai_actor* ai)
 	VALUE exception = rb_errinfo();
 	rb_set_errinfo(Qnil);
 
-	if (RTEST(exception)) rb_warn("AI script error: %"PRIsVALUE"", exception);
+	if (RTEST(exception)) rb_warn("AI script error: %"PRIsVALUE"", rb_funcall(exception, rb_intern("full_message"), 0));
 }
 
 /* clear AI error state */
@@ -154,11 +154,14 @@ VALUE m_time(VALUE self)
 	return UINT2NUM(SDL_GetTicks());
 }
 
+/* we don't need any mark/free/GC/etc. see later comment when we define the class */
+static const rb_data_type_t actor_type = { .wrap_struct_name = "actor" };
+
 /* Actor#pos - returns screen position x, y in pixels */
 VALUE actor_m_pos(VALUE self)
 {
 	struct actor* data;
-	Data_Get_Struct(self, struct actor, data);
+	TypedData_Get_Struct(self, struct actor, &actor_type, data);
 
 	return rb_ary_new_from_args(2, DBL2NUM(data->pos.x), DBL2NUM(data->pos.y));
 }
@@ -167,7 +170,7 @@ VALUE actor_m_pos(VALUE self)
 VALUE actor_m_dir(VALUE self)
 {
 	struct actor* data;
-	Data_Get_Struct(self, struct actor, data);
+	TypedData_Get_Struct(self, struct actor, &actor_type, data);
 
 	return rb_ary_new_from_args(2, DBL2NUM(data->dir.x), DBL2NUM(data->dir.y));
 }
@@ -179,7 +182,7 @@ VALUE actor_m_move(VALUE self, VALUE x, VALUE y)
 	float ny = NUM2DBL(y);
 
 	struct actor* data;
-	Data_Get_Struct(self, struct actor, data);
+	TypedData_Get_Struct(self, struct actor, &actor_type, data);
 
 	data->dir.x = nx;
 	data->dir.y = ny;
@@ -202,7 +205,7 @@ int main(int argc, char** argv)
 	rb_define_global_function("time", m_time, 0);
 
 	/* Actor will wrap struct actor for passing to Ruby */
-	VALUE cActor = rb_define_class("Actor", rb_cObject);
+	VALUE cActor = rb_define_class("Actor", rb_cData);
 	rb_define_method(cActor, "pos", actor_m_pos, 0);
 	rb_define_method(cActor, "dir", actor_m_dir, 0);
 	rb_define_method(cActor, "move", actor_m_move, 2);
@@ -266,8 +269,8 @@ int main(int argc, char** argv)
 
 	/* create Ruby objects for actors */
 	/* we can use NULL for the free function because the data are on the stack */
-	VALUE player_v = Data_Wrap_Struct(cActor, NULL, NULL, &player);
-	VALUE ai_v = Data_Wrap_Struct(cActor, NULL, NULL, &ai_act);
+	VALUE player_v = TypedData_Wrap_Struct(cActor, &actor_type, &player);
+	VALUE ai_v = TypedData_Wrap_Struct(cActor, &actor_type, &ai_act);
 
 	/* don't allow the player to be moved via the AI script */
 	rb_undef_method(rb_singleton_class(player_v), "move");
