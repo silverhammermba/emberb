@@ -9,7 +9,7 @@
  */
 #define UNWRAP(val, data) \
 	mpz_t* data;\
-	Data_Get_Struct(val, mpz_t, data);
+	TypedData_Get_Struct(val, mpz_t, &mpz_type, data);
 
 /*
  * we're also going to be pretty strict about accepting only
@@ -24,13 +24,22 @@ VALUE mGMP;
 VALUE cInteger;
 
 /* function to free data wrapped in GMP::Integer */
-void integer_free(mpz_t* data)
+void integer_free(void* data)
 {
 	/* free memory allocated by GMP */
-	mpz_clear(*data);
+	mpz_clear(*(mpz_t*)data);
 
 	free(data);
 }
+
+static const rb_data_type_t mpz_type = {
+	.wrap_struct_name = "gmp_mpz",
+	.function = {
+		.dfree = integer_free,
+		/* probably should set .dsize but I don't know how to write it for mpz_t... */
+	},
+	.flags = RUBY_TYPED_FREE_IMMEDIATELY,
+};
 
 /* GMP::Integer.allocate */
 VALUE integer_c_alloc(VALUE self)
@@ -39,7 +48,7 @@ VALUE integer_c_alloc(VALUE self)
 	/* GMP initialization */
 	mpz_init(*data);
 
-	return Data_Wrap_Struct(self, NULL, integer_free, data);
+	return TypedData_Wrap_Struct(self, &mpz_type, data);
 }
 
 /* GMP::Integer#initialize
