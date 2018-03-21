@@ -700,18 +700,16 @@ by `initialize`:
 {% include c/wrap.h %}
 {% endhighlight %}
 
-TODO when was the TypedData\* stuff introduced?
-
 In most cases you'll probably be wrapping something more complicated (like a
 `struct`), but the principles will be the same. After allocating the C data, we
-use the `TypedData_Wrap_Struct()` macro to wrap the pointer in a `VALUE`. The
-first argument is the class to give the `VALUE`, which here is the receiver
-since we're in a class method. The second argument is a pointer to a struct
-defining several options for use internally by Ruby and the last argument is the
-data pointer itself. The meaning of the fields in that struct are:
+use the `TypedData_Wrap_Struct()`[^oldwrap] macro to wrap the pointer in a
+`VALUE`. This wrapping takes three arguments: the class of the object (`self`
+because we're in a class method), a pointer to a struct, and the data pointer to
+be wrapped. The tricky part is the struct pointer; it provides additional
+information for internal use by Ruby:
 
-* `wrap_struct_name` is a string used by Ruby to internally identify your type.
-  It doesn't really matter what it is as long as it's sensible and unique
+* `wrap_struct_name` is a string used by Ruby to identify your type. It doesn't
+  really matter what it is as long as it's sensible and unique
 * `function` is a struct containing several function pointers for use by the
   garbage collector
 * `dmark` will be described later, but as long your C data doesn't point to any
@@ -730,7 +728,7 @@ data pointer itself. The meaning of the fields in that struct are:
 If you don't set some of these members, you should zero them out so that Ruby
 doesn't accidentally read garbage data. That's why I used C99's [designated
 initializer][desinit] syntax in the example above: any members you omit will be
-safely cleared.
+safely cleared by the compiler.
 
 [desinit]: https://gcc.gnu.org/onlinedocs/gcc/Designated-Inits.html
 
@@ -753,15 +751,13 @@ allocation in `initialize`.
 [raii]: http://wikipedia.org/wiki/Resource_Acquisition_Is_Initialization
 [place]: http://en.cppreference.com/w/cpp/language/new#Allocation
 
-TODO test this
-
 In simple cases (like the previous example) you can make your code a little less
 verbose. If the function to free your data just calls `free()` as in the
 example, you can pass `RUBY_DEFAULT_FREE` for `dfree` and Ruby will
 free it for you (**don't** use `NULL` unless you like memory leaks). Similarly,
 if your allocation is just a `malloc()` as in the example, the macro
 `TypedData_Make_Struct()` does the allocation for you _and_ wraps it. We could
-rewrite the allocation function from the previous example as such:
+shorten the previous example as such:
 
 {% highlight c %}
 {% include c/makestruct.h %}
@@ -790,8 +786,6 @@ issue. But if you really must...
 In the following example, we'll wrap a C `struct` which contains a `VALUE`. The
 mark function has the same signature as the free function and all it has to do
 is mark any `VALUE`s in the `struct`:
-
-TODO test this marking shit too
 
 {% highlight c %}
 {% include c/mark.h %}
@@ -989,6 +983,11 @@ download all of the code examples.
 
 [^ubf]: You can also use `RUBY_UBF_PROCESS`, but this seems to be a leftover
         from deprecated code and has the exact same effect.
+
+[^oldwrap]: The `TypedData*` macros are the preferred way to wrap data since
+            Ruby 1.9.2. If you're using an older version of Ruby you can check
+            out an older version of this guide on Github to see how it used to
+            be done.
 
 [^maybe]: There's also the enigmatically named `rb_gc_mark_maybe()`, but I'm not
           sure when it is needed.

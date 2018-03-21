@@ -235,7 +235,7 @@ void Init_gmp()
 	mGMP = rb_define_module("GMP");
 
 	/* define GMP::Integer */
-	cInteger = rb_define_class_under(mGMP, "Integer", rb_cObject);
+	cInteger = rb_define_class_under(mGMP, "Integer", rb_cData);
 	rb_define_alloc_func(cInteger, integer_c_alloc);
 	rb_define_method(cInteger, "initialize", integer_m_initialize, -1);
 	rb_define_method(cInteger, "to_s", integer_m_to_s, -1);
