@@ -700,19 +700,49 @@ by `initialize`:
 {% include c/wrap.h %}
 {% endhighlight %}
 
+TODO when was the TypedData\* stuff introduced?
+
 In most cases you'll probably be wrapping something more complicated (like a
 `struct`), but the principles will be the same. After allocating the C data, we
-use the `Data_Wrap_Struct()` macro to wrap the pointer in a `VALUE`. The first
-argument is the class to give the `VALUE`, which here is the receiver since
-we're in a class method. The second argument is used by Ruby's garbage collector
-and will be described later, but as long your C data doesn't point to any Ruby
-objects you don't need it and can pass `NULL`. The third argument is the
-function that the garbage collector will call when the object is destroyed, and
-last is the data pointer itself. `VALUE`s that wrap C data will have type
-`T_DATA` with respect to the [`TYPE()` macro](#value).
+use the `TypedData_Wrap_Struct()` macro to wrap the pointer in a `VALUE`. The
+first argument is the class to give the `VALUE`, which here is the receiver
+since we're in a class method. The second argument is a pointer to a struct
+defining several options for use internally by Ruby and the last argument is the
+data pointer itself. The meaning of the fields in that struct are:
 
-`Data_Get_Struct()` is simpler: it takes the object to unwrap, the type of the
-underlying data, and the pointer to assign the data to.
+* `wrap_struct_name` is a string used by Ruby to internally identify your type.
+  It doesn't really matter what it is as long as it's sensible and unique
+* `function` is a struct containing several function pointers for use by the
+  garbage collector
+* `dmark` will be described later, but as long your C data doesn't point to any
+  Ruby objects you don't need it
+* `dfree` will be called when your object is destroyed and should free all
+  memory allocated by the object
+* `dsize` is called by Ruby to check how much memory your object is taking up.
+  It _can_ be omitted, but it's polite to include it
+* `data` can point to arbitrary data. Think of it as wrapping C data at a class
+  level. Also not manadatory
+* `flags` lets you enable additional optimizations when your objects are
+  garbage collected. As long as your `dfree` function doesn't unlock the
+  [GVL](#c-in-ruby-threads) (why would you do that???) you can safely set it to
+  `RUBY_TYPED_FREE_IMMEDIATELY` for a slight performance improvement
+
+If you don't set some of these members, you should zero them out so that Ruby
+doesn't accidentally read garbage data. That's why I used C99's [designated
+initializer][desinit] syntax in the example above: any members you omit will be
+safely cleared.
+
+[desinit]: https://gcc.gnu.org/onlinedocs/gcc/Designated-Inits.html
+
+Notice also that when I defined the class, I derived from `rb_cData` instead of
+`rb_cObject`. `VALUE`s that wrap C data will have type `T_DATA` with respect to
+the [`TYPE()` macro](#value). This helps ensure a clear separation between
+native Ruby objects and those wrapping C data.
+
+Once you've done all of that work to wrap up the C data, getting it back out is
+easy: `TypedData_Get_Struct()` takes the object to unwrap, the C type of the
+underlying data, the same struct pointer as before, and the pointer to assign
+the data to.
 
 This separation of allocation and initialization doesn't jive with [RAII][raii],
 so if you're using C++ you will probably want to use [placement new][place] when
@@ -723,12 +753,14 @@ allocation in `initialize`.
 [raii]: http://wikipedia.org/wiki/Resource_Acquisition_Is_Initialization
 [place]: http://en.cppreference.com/w/cpp/language/new#Allocation
 
+TODO test this
+
 In simple cases (like the previous example) you can make your code a little less
 verbose. If the function to free your data just calls `free()` as in the
-example, you can pass `RUBY_DEFAULT_FREE` as the function pointer and Ruby will
+example, you can pass `RUBY_DEFAULT_FREE` for `dfree` and Ruby will
 free it for you (**don't** use `NULL` unless you like memory leaks). Similarly,
 if your allocation is just a `malloc()` as in the example, the macro
-`Data_Make_Struct()` does the allocation for you _and_ wraps it. We could
+`TypedData_Make_Struct()` does the allocation for you _and_ wraps it. We could
 rewrite the allocation function from the previous example as such:
 
 {% highlight c %}
@@ -737,13 +769,13 @@ rewrite the allocation function from the previous example as such:
 
 ### Marking ###
 
-That `NULL` argument we passed to the wrapping macros is the pointer to your
-object's "mark function". This is so named because of the garbage collector's
-"mark and sweep" algorithm. The basic idea behind mark and sweep is that when
-the garbage collector needs to free up memory, it performs two passes: the first
-(mark) pass iterates through every _referenced_ Ruby object and marks it as
-active, then the second (sweep) pass iterates through every _allocated_ Ruby
-object and frees the ones that haven't been marked active.
+That `dmark` pointer in the type structure above is the pointer to your object's
+"mark function". This is so named because of the garbage collector's "mark and
+sweep" algorithm. The basic idea behind mark and sweep is that when the garbage
+collector needs to free up memory, it performs two passes: the first (mark) pass
+iterates through every _referenced_ Ruby object and marks it as active, then the
+second (sweep) pass iterates through every _allocated_ Ruby object and frees the
+ones that haven't been marked active.
 
 This is relevant to wrapping C data because it's possible that you might wrap a
 C `struct` which contains a Ruby `VALUE`&mdash;which the garbage collector is
@@ -751,11 +783,15 @@ responsible for cleaning up. Since the garbage collector is only aware of
 `VALUE`s referenced _by Ruby_ (not by C pointers), it won't be able to mark the
 referenced `VALUE` as active. The result is that as soon as the garbage
 collector needs to free up some memory, your C data is going to end up with a
-reference to a nonexistent Ruby object.
+reference to a nonexistent Ruby object. Note that this kind of wrapping of Ruby
+data inside C data is a really bad idea, precisely because of this kind of
+issue. But if you really must...
 
 In the following example, we'll wrap a C `struct` which contains a `VALUE`. The
 mark function has the same signature as the free function and all it has to do
 is mark any `VALUE`s in the `struct`:
+
+TODO test this marking shit too
 
 {% highlight c %}
 {% include c/mark.h %}
