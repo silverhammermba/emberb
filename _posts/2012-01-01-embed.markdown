@@ -24,7 +24,8 @@ $ pkg-config --cflags --libs ruby-{{ site.rbversion }}
 ## Startup, Teardown ##
 
 Including the Ruby interpreter in your C/C++ program is pretty simple. Just
-include the header and bookend your API calls with a couple function calls.
+include the header, call a startup function in `main` before you use the API,
+and a cleanup function after you're done:
 
 {% highlight c %}
 {% include embed/simple.c %}
@@ -40,6 +41,15 @@ value&mdash;otherwise it returns the argument you passed it. This allows a
 little shortcut for returning an error status if the cleanup fails (as
 demonstrated in the previous example).
 
+_Technically_ you don't have to call `ruby_init`/`ruby_setup` in `main`, but the
+Ruby VM assumes that all future Ruby code will be run from the same stack frame
+or a lower one (for garbage collection purposes). The easiest way to ensure this
+is to do set up at the top-level of your program, though other approaches could
+work. But it would be a bad idea, for example, to init Ruby in some
+deeply-nested function, pop a bunch of stack frames, and then run a bunch of
+Ruby code.
+{: .alert .alert-danger}
+
 During cleanup, the VM might evaluate more Ruby code (if you passed a block to
 `at_exit`, for example) which could raise an exception. `ruby_cleanup()` handles
 these by returning a nonzero value and printing an error message. If you instead
@@ -51,6 +61,18 @@ Here's an alternative example:
 {% highlight c %}
 {% include embed/advanced.c %}
 {% endhighlight %}
+
+### Limitations ###
+
+Other than the stack frame warning above, there is another limitation: you only
+get one Ruby VM per process. The startup/teardown might make it look like you
+can keep on destroying and rebuilding the VM over and over again, but
+`ruby_cleanup` only makes sure that your Ruby code is all cleaned up and done.
+It doesn't fully clean up the VM state such that it is ready to be
+re-initialized: if you call `ruby_init` again, it will fail.
+
+If for some reason you need multiple Ruby VMs in your program, you will need to
+spin them off in multiple processes to bypass this limitation.
 
 ## Tweaking the VM ##
 
