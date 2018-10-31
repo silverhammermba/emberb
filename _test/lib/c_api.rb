@@ -1,7 +1,7 @@
 require 'open3'
 require 'tempfile'
 
-RUBY_VERSION = "2.5"
+BUILD_VERSION = "2.5"
 
 module CAPI
   class Result
@@ -15,6 +15,7 @@ module CAPI
   end
 
   class CompilerError < StandardError; end
+  class RuntimeError < StandardError; end
 
   # run a block of C code with the VM already initalized, must include an entry point:
   # void ruby_main(void)
@@ -33,25 +34,23 @@ module CAPI
       }
     SOURCE
 
-    opts = `pkg-config --cflags --libs ruby-#{RUBY_VERSION}`
+    opts = `pkg-config --cflags --libs ruby-#{BUILD_VERSION}`
 
     exe = Tempfile.new('capi')
 
     begin
       exe.close
-      puts "Building:"
       out, err, status = Open3.capture3("gcc -o #{exe.path} -xc - #{opts}", stdin_data: code)
 
       unless status.success?
         raise CompilerError, err
       end
 
-      puts "Running:"
       result = Result.new *Open3.capture3(exe.path)
       # TODO what does a segfault look like?
-      puts out
-      puts err
-      p status
+      unless result.status.success?
+        raise RuntimeError, result.err
+      end
 
       return result
     ensure
