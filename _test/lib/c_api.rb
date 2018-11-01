@@ -60,7 +60,8 @@ module CAPI
       {
         ruby_init();
         ruby_main();
-        return ruby_cleanup(0);
+        ruby_cleanup(0);
+        return 0;
       }
     SOURCE
   end
