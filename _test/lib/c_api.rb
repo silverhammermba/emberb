@@ -17,21 +17,13 @@ module CAPI
   class CompilerError < StandardError; end
   class RuntimeError < StandardError; end
 
-  # run a block of C code with the VM already initalized, must include an entry point:
-  # void ruby_main(void)
-  def self.run_c_blocks code
+  # run some c code using the VM, you have to define main
+  def self.run_c_main code
     code = <<-SOURCE
       #include <ruby.h>
       #include <stdio.h>
 
       #{code}
-
-      int main(int argc, char* argv[])
-      {
-        ruby_init();
-        ruby_main();
-        return ruby_cleanup(0);
-      }
     SOURCE
 
     opts = `pkg-config --cflags --libs ruby-#{BUILD_VERSION}`
@@ -47,7 +39,7 @@ module CAPI
       end
 
       result = Result.new *Open3.capture3(exe.path)
-      # TODO what does a segfault look like?
+
       unless result.status.success?
         raise RuntimeError, result.err
       end
@@ -56,6 +48,21 @@ module CAPI
     ensure
       exe.unlink
     end
+  end
+
+  # run a block of C code with the VM already initalized, must include an entry point:
+  # void ruby_main(void)
+  def self.run_c_blocks code
+    run_c_main <<-SOURCE
+      #{code}
+
+      int main(int argc, char* argv[])
+      {
+        ruby_init();
+        ruby_main();
+        return ruby_cleanup(0);
+      }
+    SOURCE
   end
 
   # run C statements with the Ruby VM initialized, in the context of a top-level function
