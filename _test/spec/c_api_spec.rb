@@ -68,5 +68,22 @@ describe CAPI do
         SOURCE
       ).out).to eq ?1
     end
+
+    it "raises exceptions when not protected" do
+      message = "Failed in a good way"
+
+      expect(CAPI.run_c_blocks(<<-SOURCE
+        VALUE should_raise(VALUE obj) {
+          return rb_eval_string("foobar");
+        }
+        void ruby_main() {
+          int state;
+          rb_protect(should_raise, Qnil, &state);
+
+          if (state) { printf("#{message}"); }
+        }
+      SOURCE
+      ).out).to eq message
+    end
   end
 end
