@@ -58,5 +58,15 @@ describe CAPI do
         SOURCE
       ).out).to eq message
     end
+
+    it "returns a value" do
+      expect(CAPI.run_c(<<-SOURCE
+        int state;
+        VALUE result = rb_eval_string_protect("Object", &state);
+
+        printf("%d", result == rb_cObject);
+        SOURCE
+      ).out).to eq ?1
+    end
   end
 end

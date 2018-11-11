@@ -17,7 +17,7 @@ module CAPI
   class CompilerError < StandardError; end
   class RuntimeError < StandardError; end
 
-  # run some c code using the VM, you have to define main
+  # run some c code with the Ruby lib available, you have to define main
   def self.run_c_main code
     code = <<-SOURCE
       #include <ruby.h>
