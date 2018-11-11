@@ -86,4 +86,34 @@ describe CAPI do
       ).out).to eq message
     end
   end
+
+  describe "VALUEs" do
+    it "can be type-checked with RB_TYPE_P" do
+      expect(CAPI.run_c(<<-SOURCE
+        if (!RB_TYPE_P(rb_cObject, T_CLASS)) { printf("failed"); }
+      SOURCE
+      ).out).to eq ""
+    end
+
+    it "can be type-checked dangerously with Check_Type" do
+      message = "Failed in a good way"
+
+      expect(CAPI.run_c_blocks(<<-SOURCE
+        VALUE raise_unless_true(VALUE obj) {
+          Check_Type(obj, T_TRUE);
+          return Qnil;
+        }
+        void ruby_main() {
+          int state;
+          rb_protect(raise_unless_true, Qfalse, &state);
+
+          if (state) { printf("#{message}"); }
+        }
+      SOURCE
+      ).out).to eq message
+    end
+
+    # TODO test that these work for subclasses
+    # TODO test that testing for subclasses doesn't work for T_OBJECT
+  end
 end
