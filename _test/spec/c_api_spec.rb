@@ -113,6 +113,15 @@ describe CAPI do
       ).out).to eq message
     end
 
+    it "can type-check for subclasses" do
+      expect(CAPI.run_c(<<-SOURCE
+        int state;
+        VALUE obj = rb_eval_string_protect("class MyArray < Array; end; MyArray.new", &state);
+        if (state || !RB_TYPE_P(obj, T_ARRAY)) { printf("failed"); }
+      SOURCE
+      ).out).to eq ""
+    end
+
     # TODO test that these work for subclasses
     # TODO test that testing for subclasses doesn't work for T_OBJECT
   end
