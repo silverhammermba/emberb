@@ -122,7 +122,22 @@ describe CAPI do
       ).out).to eq ""
     end
 
-    # TODO test that these work for subclasses
-    # TODO test that testing for subclasses doesn't work for T_OBJECT
+    it "can't type check using T_OBJECT" do
+      expect(CAPI.run_c(<<-SOURCE
+        int state;
+        VALUE obj = rb_eval_string_protect("class MyArray < Array; end; MyArray.new", &state);
+        if (state || RB_TYPE_P(obj, T_OBJECT)) { printf("failed"); }
+      SOURCE
+      ).out).to eq ""
+    end
+
+    it "can type check with T_OBJECT for custom classes" do
+      expect(CAPI.run_c(<<-SOURCE
+        int state;
+        VALUE obj = rb_eval_string_protect("class Foo; end; class Bar < Foo; end; Bar.new", &state);
+        if (state || !RB_TYPE_P(obj, T_OBJECT)) { printf("failed"); }
+      SOURCE
+      ).out).to eq ""
+    end
   end
 end
