@@ -1,7 +1,7 @@
 require 'open3'
 require 'tempfile'
 
-BUILD_VERSION = "2.5"
+BUILD_VERSION = "2.6"
 
 module CAPI
   class Result

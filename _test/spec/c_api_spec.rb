@@ -2,6 +2,18 @@ require 'c_api'
 
 include RSpec
 
+RSpec::Matchers.define :be_true_in_c do |whatever|
+  match do |actual|
+    expect(CAPI.run_c(<<-SOURCE
+      if (#{actual})
+        printf("true");
+      else
+        printf("false");
+      SOURCE
+    ).out).to eq('true')
+  end
+end
+
 describe CAPI do
   describe "setup" do
     it "works with no code" do
@@ -138,6 +150,19 @@ describe CAPI do
         if (state || !RB_TYPE_P(obj, T_OBJECT)) { printf("failed"); }
       SOURCE
       ).out).to eq ""
+    end
+
+    it "has shortcut checks for common types" do
+      expect("FIXNUM_P(INT2NUM(3))").to be_true_in_c
+      expect("RB_FLOAT_TYPE_P(DBL2NUM(3.14))").to be_true_in_c
+      expect("SYMBOL_P(ID2SYM(rb_intern(\"puts\")))").to be_true_in_c
+      expect("NIL_P(Qnil)").to be_true_in_c
+
+      # and now the negations of those
+      expect("FIXNUM_P(Qnil)").not_to be_true_in_c
+      expect("RB_FLOAT_TYPE_P(Qnil)").not_to be_true_in_c
+      expect("SYMBOL_P(Qnil)").not_to be_true_in_c
+      expect("NIL_P(Qtrue)").not_to be_true_in_c
     end
   end
 end
