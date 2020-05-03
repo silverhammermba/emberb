@@ -299,7 +299,7 @@ arguments from `argv`, so why not play it safe?[^break]
 
 Many of Ruby's built-in classes have API functions defined for their most useful
 methods. Using them can save you from the verbosity of always using
-`rb_funcall()` and can provide more compile-time checks. There are for too many
+`rb_funcall()` and can provide more compile-time checks. There are far too many
 functions to list here, so I recommend checking them out in the header
 `ruby/intern.h`.
 
