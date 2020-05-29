@@ -346,6 +346,28 @@ The first and second arguments are the exception class and message&mdash;like
 like in `rb_sprintf()`](#string), letting you more easily build a useful
 message.
 
+To raise an exception in one function but compose the exception message in
+another function (e.g. if you have a helper function just for raising
+the exception), use `rb_exc_raise` with `rb_exc_new_str`:
+
+{% highlight c %}
+{% include c/raise_exc_str.h %}
+{% endhighlight %}
+
+If the exception message is in a NULL-terminated C string and no printf-style
+formatting is needed, you could use `rb_exc_new_cstr`:
+
+{% highlight c %}
+{% include c/raise_exc_cstr.h %}
+{% endhighlight %}
+
+If the exception message is a binary blob, use `rb_exc_new` which takes the
+length of the blob as the third argument:
+
+{% highlight c %}
+{% include c/raise_exc_new.h %}
+{% endhighlight %}
+
 ### Rescue ###
 
 There are several ways to rescue exceptions using the API. All of them require
