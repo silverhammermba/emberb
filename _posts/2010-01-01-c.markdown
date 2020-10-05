@@ -502,6 +502,8 @@ globals, but of course you need an object to get the variable from.
 There isn't an automatic way to synchronize instance variables like you can with
 globals.
 
+To iterate over all instance variables, use `rb_ivar_foreach`.
+
 For class variables, the methods are `rb_cv_get()` and `rb_cv_set()` and of
 course the first argument should be a class object.
 
