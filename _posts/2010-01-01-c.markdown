@@ -82,7 +82,7 @@ type?". There are a couple macros for performing this test, and both take a
 [`T_` constant][datatypes] corresponding to the Ruby class you're
 testing for e.g. `T_STRING`, `T_ARRAY`, etc.
 
-[datatypes]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc#data-types
+[datatypes]: https://github.com/ruby/ruby/blob/master/doc/extension.rdoc#label-Data+Types
 
 {% highlight c %}
 {% include c/checktype.h %}
@@ -889,7 +889,7 @@ some poor recommendations (in my opinion), but it is also a little more
 exhaustive on certain topics. In many cases this is because I intentionally
 skipped something that I either found not useful or better documented elsewhere.
 
-[readme]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc
+[readme]: https://github.com/ruby/ruby/blob/master/doc/extension.rdoc
 
 ### Headers ###
 
@@ -996,5 +996,5 @@ download all of the code examples.
 
 [^tdata]: Or use `T_DATA` if the object [wraps a C pointer](#data).
 
-[control]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc#control-structure
+[control]: https://github.com/ruby/ruby/blob/master/doc/extension.rdoc#label-Control+Structure
 [bug2]: https://bugs.ruby-lang.org/issues/10466
