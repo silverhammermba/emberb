@@ -135,5 +135,5 @@ subdirectories of `ext/` and pass all of the `extconf.rb`s to the spec.
 
 [^rbg]: [http://guides.rubygems.org/gems-with-extensions/](http://guides.rubygems.org/gems-with-extensions/)
 
-[globals]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc#prepare-extconfrb
-[makefile]: https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc#generate-makefile
+[globals]: https://github.com/ruby/ruby/blob/master/doc/extension.rdoc#label-Prepare+extconf.rb
+[makefile]: https://github.com/ruby/ruby/blob/master/doc/extension.rdoc#label-Generate+Makefile
