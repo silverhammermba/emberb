@@ -1,10 +1,8 @@
-# need to copy LESS-processed css back here to push to github
+serve:
+	bundle exec jekyll serve --watch --baseurl=
+
 build:
-	jekyll build
-	cp -r _site/css ./
+	bundle exec jekyll build
 
 test:
 	$(MAKE) -C _test
-
-serve:
-	jekyll serve --watch --baseurl=
