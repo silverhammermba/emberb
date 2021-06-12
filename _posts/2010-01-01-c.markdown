@@ -346,6 +346,13 @@ The first and second arguments are the exception class and message&mdash;like
 like in `rb_sprintf()`](#string), letting you more easily build a useful
 message.
 
+You can also construct exception objects directly using `rb_exc_new_cstr`,
+`rb_exc_new`, and `rb_exc_new_str`. All of these accept an exception class as
+their first argument and then they work just like their [string](#string)
+counterparts, constructing an exception using a null-terminated string,
+non-null-terminated string, and a `String` object, resp. Then you can raise your
+exception object with `rb_exc_raise`.
+
 ### Rescue ###
 
 There are several ways to rescue exceptions using the API. All of them require
