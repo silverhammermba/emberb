@@ -66,7 +66,7 @@ necessary (or desirable). If one of your C methods just calls a bunch of API
 functions (like `to_i` and `==` in the example), you're probably only saving
 yourself a couple CPU cycles compared to implementing the method in Ruby. And of
 course that comes at the cost of needing to spend more time writing C and less
-time writing Ruby. &#9786;
+time writing Ruby. 😀
 
 A common convention when writing extensions is to only implement the "meat" of
 the extension in C and to do everything else in a regular Ruby script that pulls

@@ -329,7 +329,7 @@ Just like [`load` in Ruby][rbload], these functions can wrap the loaded code in
 an anonymous module to protect the global namespace. Just pass a nonzero value
 for the second argument.
 
-[rbload]: http://www.ruby-doc.org/core-1.8.6/Kernel.html#method-i-load
+[rbload]: http://www.ruby-doc.org/core/Kernel.html#method-i-load
 
 ## Exceptions ##
 

@@ -58,7 +58,7 @@ your extension.
 You can modify a few of the generated Makefile variables by modifying the
 corresponding globals in Ruby: `$CFLAGS`, `$CPPFLAGS`, and `$LDFLAGS`[^glob].
 You can also use the `$objs` global to define a list of object files for the
-Makefile if it's method of automatically generating targets doesn't work for
+Makefile if its method of automatically generating targets doesn't work for
 your extension.
 
 All of the `mkmf` functions and their options are well-documented
