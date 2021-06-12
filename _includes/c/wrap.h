@@ -45,7 +45,7 @@ void some_func()
 {
 	/* ... */
 
-	VALUE cFoo = rb_define_class("Foo", rb_cData);
+	VALUE cFoo = rb_define_class("Foo", rb_cObject);
 
 	rb_define_alloc_func(cFoo, foo_alloc);
 	rb_define_method(cFoo, "initialize", foo_m_initialize, 1);

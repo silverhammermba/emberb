@@ -205,7 +205,7 @@ int main(int argc, char** argv)
 	rb_define_global_function("time", m_time, 0);
 
 	/* Actor will wrap struct actor for passing to Ruby */
-	VALUE cActor = rb_define_class("Actor", rb_cData);
+	VALUE cActor = rb_define_class("Actor", rb_cObject);
 	rb_define_method(cActor, "pos", actor_m_pos, 0);
 	rb_define_method(cActor, "dir", actor_m_dir, 0);
 	rb_define_method(cActor, "move", actor_m_move, 2);

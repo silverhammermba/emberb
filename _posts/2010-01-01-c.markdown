@@ -741,10 +741,9 @@ safely cleared by the compiler.
 
 [desinit]: https://gcc.gnu.org/onlinedocs/gcc/Designated-Inits.html
 
-Notice also that when I defined the class, I derived from `rb_cData` instead of
-`rb_cObject`. `VALUE`s that wrap C data will have type `T_DATA` with respect to
-the [`TYPE()` macro](#value). This helps ensure a clear separation between
-native Ruby objects and those wrapping C data.
+`VALUE`s that wrap C data will have type `T_DATA` with respect to the [`TYPE()`
+macro](#value). This helps ensure a clear separation between native Ruby objects
+and those wrapping C data.
 
 Once you've done all of that work to wrap up the C data, getting it back out is
 easy: `TypedData_Get_Struct()` takes the object to unwrap, the C type of the
