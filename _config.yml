@@ -5,4 +5,4 @@ markdown: kramdown
 permalink: /:categories/:title/
 kramdown:
   parse_block_html: true
-rbversion: 2.5
+rbversion: 3.0
