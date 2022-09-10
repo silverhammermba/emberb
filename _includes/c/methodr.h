@@ -1,6 +1,6 @@
 /* the usual */
 rb_define_method(klass, "my_method", my_method, argc);
-/* or, like a toplevel def (by defining a private method in Kernel) */
+/* or, like a toplevel def (by defining a public method in Kernel) */
 rb_define_global_function("my_method", my_method, argc);
 
 /* or, with access control */
