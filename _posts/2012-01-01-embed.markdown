@@ -37,7 +37,7 @@ your program! If you would rather have a softer error, you can instead call
 (unfortunately it is not clear how to get a message for the error[^err]).
 
 If an error occurs during `rb_cleanup()`, it returns a nonzero
-value&mdash;otherwise it returns the argument you passed it. This allows a
+value—otherwise it returns the argument you passed it. This allows a
 little shortcut for returning an error status if the cleanup fails (as
 demonstrated in the previous example).
 

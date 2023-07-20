@@ -59,7 +59,7 @@ doesn't take a `state` argument and instead raises any exceptions normally. See
 [Exceptions](#exceptions) for how to handle both of these cases.
 
 Unlike `eval` in Ruby, these functions evaluate the string in an isolated
-binding&mdash;like when you `require` something. So local variables in the
+binding—like when you `require` something. So local variables in the
 string will not be accessible from elsewhere and vice versa.
 
 However, like using `eval` in Ruby, using these functions is not a good
@@ -341,7 +341,7 @@ To raise an exception, use:
 {% include c/raise.h %}
 {% endhighlight %}
 
-The first and second arguments are the exception class and message&mdash;like
+The first and second arguments are the exception class and message—like
 `raise` in Ruby. The big difference is that the message is a format string [just
 like in `rb_sprintf()`](#string), letting you more easily build a useful
 message.
@@ -483,7 +483,7 @@ will be automatically synchronized with one.
 {% endhighlight %}
 
 The `VALUE` should be initialized before you create the global in Ruby and it
-should be global in C as well&mdash;you don't want it to go out of scope while
+should be global in C as well—you don't want it to go out of scope while
 Ruby is using it! For `rb_define_hooked_variable()`, you can pass `NULL` for the
 getter/setter if you want to synchronize normally for that operation. Or you can
 throw out `global` entirely with `rb_define_virtual_variable()` though of course
@@ -782,7 +782,7 @@ second (sweep) pass iterates through every _allocated_ Ruby object and frees the
 ones that haven't been marked active.
 
 This is relevant to wrapping C data because it's possible that you might wrap a
-C `struct` which contains a Ruby `VALUE`&mdash;which the garbage collector is
+C `struct` which contains a Ruby `VALUE`—which the garbage collector is
 responsible for cleaning up. Since the garbage collector is only aware of
 `VALUE`s referenced _by Ruby_ (not by C pointers), it won't be able to mark the
 referenced `VALUE` as active. The result is that as soon as the garbage
@@ -901,7 +901,7 @@ skipped something that I either found not useful or better documented elsewhere.
 
 I think some of the handiest resources are the Ruby headers themselves. The full
 API (i.e. everything you get by including `ruby.h`) easily consists of a
-thousand functions, macros, constants, and globals&mdash;most of which have
+thousand functions, macros, constants, and globals—most of which have
 never been documented. However _most_ things are reasonably named and you should
 be able to figure out what they do from the header. Most everything you need
 should be in the headers `ruby/ruby.h` and `ruby/intern.h`. The former has all
@@ -972,9 +972,9 @@ download all of the code examples.
           been a happy accident, and could certainly fail on different platforms.
 
 [^clear]: The documentation [states][control] that "You have to clear the error
-          info [when] ignoring the caught exception" during `rb_protect`. But I
+          info... when ignoring the caught exception" during `rb_protect`. But I
           can't find any documentation of when it would be cleared for
-          you&mdash;it seems like you _always_ have to clear it.
+          you—it seems like you _always_ have to clear it.
 
 [^yield]: And there's `rb_yield_block()` which takes two unused arguments and is
           never called by anything in Ruby. Odd.
