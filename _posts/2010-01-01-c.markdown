@@ -958,7 +958,7 @@ download all of the code examples.
 
 [^undef]: There's also `Qundef` representing an undefined value, but
           this has no Ruby equivalent and is [rarely](#handling-blocks)
-          [used](#constants-1). In fact, outside of those rare occassions,
+          [used](#constants-1). In fact, outside of those rare occasions,
           `Qundef` can segfault the VM if Ruby was expecting a normal `VALUE`.
 
 [^wrap]: There's also `rb_eval_string_wrap()` which _should_ be useful, but is
