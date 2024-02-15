@@ -11,7 +11,7 @@ include paths for these headers. You will also need to link with the Ruby lib.
 On my machine, my minimal compiler options are
 
 {% highlight shell_session %}
-$ gcc -I/usr/include/ruby-{{ site.rbversion }}.0 -I/usr/include/ruby-{{ site.rbversion }}.0/x86_64-linux -lruby
+$ gcc foo.c -I/usr/include/ruby-{{ site.rbversion }}.0 -I/usr/include/ruby-{{ site.rbversion }}.0/x86_64-linux -lruby
 {% endhighlight %}
 
 Though, if available, you should really use `pkg-config` to get the appropriate
