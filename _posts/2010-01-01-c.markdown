@@ -605,7 +605,23 @@ raise a fitting exception if the wrong number of arguments were passed.
 
 You can also use the return value of `rb_scan_args()` to determine how the
 function was called. It returns the number of arguments that were passed in
-Ruby.
+Ruby (excluding an option hash or iterator block).
+
+To process keyword arguments, you can use:
+
+{% highlight c %}
+{% include c/kwargs.h %}
+{% endhighlight %}
+
+- `keyword_hash` is the `VALUE` of keyword arguments from `rb_scan_args()`
+- `table` and `values` should have length `required + optional` if `optional`
+  is positive, or `required - optional - 1` if `optional` is negative.
+
+`rb_get_kwargs` will raise an exception if a mandatory keyword is missing or if `optional` is non-negative and an unknown keyword is found.
+
+{% highlight c %}
+{% include c/methodex2.h %}
+{% endhighlight %}
 
 #### Handling Blocks ####
 
