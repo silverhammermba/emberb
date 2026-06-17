@@ -15,7 +15,7 @@ VALUE test(int argc, VALUE* argv, VALUE self)
 	str = rb_sprintf("%+"PRIsVALUE" %+"PRIsVALUE" %+"PRIsVALUE" %+"PRIsVALUE" %+"PRIsVALUE, opt1, opt2, splat, opts, blk);
 	printf("%s\n", StringValueCStr(str));
 
-	return Qnil;
+	return RUBY_Qnil;
 }
 
 int main(int argc, char* argv[])

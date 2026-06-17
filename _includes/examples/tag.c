@@ -50,7 +50,7 @@ void ai_error(struct ai_actor* ai)
 
 	/* print exception */
 	VALUE exception = rb_errinfo();
-	rb_set_errinfo(Qnil);
+	rb_set_errinfo(RUBY_Qnil);
 
 	if (RTEST(exception)) rb_warn("AI script error: %"PRIsVALUE"", rb_funcall(exception, rb_intern("full_message"), 0));
 }
@@ -100,7 +100,7 @@ VALUE think_wrapper(VALUE actors)
 {
 	rb_funcall(rb_mKernel, rb_intern("think"), 2, rb_ary_entry(actors, 0), rb_ary_entry(actors, 1));
 
-	return Qundef;
+	return RUBY_Qundef;
 }
 
 /* run the AI script if possible */
@@ -187,7 +187,7 @@ VALUE actor_m_move(VALUE self, VALUE x, VALUE y)
 	data->dir.x = nx;
 	data->dir.y = ny;
 
-	return Qnil;
+	return RUBY_Qnil;
 }
 
 int main(int argc, char** argv)

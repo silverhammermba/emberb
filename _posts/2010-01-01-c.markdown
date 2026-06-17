@@ -116,8 +116,8 @@ API so you don't need an API call to access them. Modules are prefixed with
 `rb_m` e.g. `rb_mKernel`; classes are prefixed with `rb_c` e.g. `rb_cObject`;
 subclasses of `Exception` are prefixed with `rb_e` e.g. `rb_eRuntimeError`; and
 the standard IO streams are prefixed with `rb_` e.g. `rb_stderr`. `nil`,
-`false`, and `true` are prefixed with `Q` e.g. `Qnil`.[^undef] As a convenience,
-`Qfalse` is also false in C (`0`).
+`false`, and `true` are prefixed with `Q` e.g. `RUBY_Qnil`.[^undef]
+As a convenience, `RUBY_Qfalse` is also false in C (`0`).
 
 ### Translation ###
 
@@ -372,9 +372,9 @@ way to access a rescued exception is also independent of the way it is rescued:
 {% endhighlight %}
 
 `rb_errinfo()` essentially gives you the `VALUE` of Ruby's `$!` (which will be
-`Qnil` if no exception occurred). Unlike in Ruby, you must manually clear the
-exception after reading it[^clear]. Otherwise later API calls might read the old
-value and think another exception has occurred.
+`RUBY_Qnil` if no exception occurred). Unlike in Ruby, you must manually clear
+the exception after reading it[^clear]. Otherwise later API calls might read
+the old value and think another exception has occurred.
 
 Next we will go over several methods of rescuing; you can use whichever you
 like, but I think that generally the right choice is determined by your
@@ -408,8 +408,8 @@ The API also does not directly provide an equivalent to Ruby's `else` i.e. code
 to run when _no_ exception was raised. One way to do this is using the return
 value of `rb_rescue2()`. If no exception is raised, it returns the return value
 of the first (dangerous) function, otherwise the return value of the second
-(rescue) function. By having these return, say, `Qtrue` and `Qfalse` you can
-detect which case you are in.
+(rescue) function. By having these return, say, `RUBY_Qtrue` and `RUBY_Qfalse`
+you can detect which case you are in.
 
 #### rb_protect ####
 
@@ -425,7 +425,7 @@ all exceptions:
 
 Like `rb_rescue2()`, the first two arguments are for calling the function to
 protect. However, like `rb_eval_string_protect()`, if an exception is raised
-it returns `Qnil` and sets `state` to some nonzero value. If you want to
+it returns `RUBY_Qnil` and sets `state` to some nonzero value. If you want to
 re-raise the exception, pass `state` to `rb_jump_tag()` (this also works for the
 state from the other `*_protect()` functions).
 
@@ -522,9 +522,9 @@ Constants are defined similarly, but with the module to define them under:
 {% include c/constant.h %}
 {% endhighlight %}
 
-You undefine a constant by setting it to `Qundef`. Getting a constant's `VALUE`
-is a little nuanced. The API function you call depends on what you want to
-happen if the constant is _not_ defined in the module you specify:
+You undefine a constant by setting it to `RUBY_Qundef`. Getting a constant's
+`VALUE` is a little nuanced. The API function you call depends on what
+you want to happen if the constant is _not_ defined in the module you specify:
 
 {% highlight c %}
 {% include c/const_get.h %}
@@ -956,10 +956,10 @@ download all of the code examples.
            names starting with capital R). But it's generally not a good idea
            and not necessary.
 
-[^undef]: There's also `Qundef` representing an undefined value, but
+[^undef]: There's also `RUBY_Qundef` representing an undefined value, but
           this has no Ruby equivalent and is [rarely](#handling-blocks)
           [used](#constants-1). In fact, outside of those rare occasions,
-          `Qundef` can segfault the VM if Ruby was expecting a normal `VALUE`.
+          `RUBY_Qundef` can segfault the VM if Ruby was expecting a normal `VALUE`.
 
 [^wrap]: There's also `rb_eval_string_wrap()` which _should_ be useful, but is
          actually the same as `rb_eval_string_protect()` due to a [bug][bug2].

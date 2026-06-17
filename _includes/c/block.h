@@ -12,7 +12,7 @@ void some_func()
 	VALUE obj;
 	VALUE result;
 
-	result = rb_block_call(obj, rb_intern("each"), 0, NULL, my_block, Qnil);
+	result = rb_block_call(obj, rb_intern("each"), 0, NULL, my_block, RUBY_Qnil);
 
 	/* ... */
 }

@@ -189,7 +189,7 @@ VALUE integer_m_eq(VALUE self, VALUE x)
 {
 	/* for GMP::Integers, use <=> */
 	if (CLASS_OF(x) == cInteger)
-		return integer_m_spaceship(self, x) == INT2FIX(0) ? Qtrue : Qfalse;
+		return integer_m_spaceship(self, x) == INT2FIX(0) ? RUBY_Qtrue : RUBY_Qfalse;
 
 	return rb_call_super(1, &x);
 }

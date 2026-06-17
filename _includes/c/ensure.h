@@ -7,7 +7,7 @@ VALUE ensure_func(VALUE obj1)
 /* wrap rb_ensure so we can rescue an exception */
 VALUE begin_func(VALUE dangerous_arg)
 {
-	return rb_ensure(dangerous_func, dangerous_arg, ensure_func, Qnil);
+	return rb_ensure(dangerous_func, dangerous_arg, ensure_func, RUBY_Qnil);
 }
 
 VALUE rescue_func(VALUE obj1)
